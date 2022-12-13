@@ -4,9 +4,11 @@ import UserInfo from "./view/UserInfo"
 import CreateLock from "./view/createLock"
 import LockList from "./view/LockList"
 import Home from "./view/Home"
+import SbtAdmin from "./view/sbtAdmin"
 import MyFireSeed from "./view/myNFTList"
 import CreateFireSoul from "./view/createFireSoul"
 import AdminPage from "./view/admin"
+import MyPassport from "./view/myPassport"
 import GlobalStyle from "./style/style";
 import AntdOverride from "./style/antdOverride";
 import React from "react";
@@ -46,6 +48,9 @@ function App() {
                         <Route path="/mintFireSeed" element={<MintFireSeed/>}/>
                         <Route path="/createFireSoul" element={<CreateFireSoul/>}/>
                         <Route path="/myFireSeed" element={<MyFireSeed/>}/>
+                        <Route path="/SbtAdmin" element={<SbtAdmin/>}/>
+                        <Route path="/MyPassport" element={<MyPassport/>}/>
+
                     </Routes>
                 </div>
                 <FireDAOFooter/>

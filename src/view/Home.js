@@ -27,7 +27,9 @@ const Home = (props) => {
             <Button onClick={()=>{
                 goPath("/Admin")
             }}>Admin</Button>
-
+            <Button onClick={()=>{
+                goPath("/SbtAdmin")
+            }}>SbtAdmin</Button>
         </Home>
     )
 }

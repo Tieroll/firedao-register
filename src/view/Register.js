@@ -11,6 +11,7 @@ import {
     SendOutlined,
     UserOutlined
 } from '@ant-design/icons';
+import {dealMethod} from "../utils/contractUtil";
 
 const Register = (props) => {
     const [form] = Form.useForm();
@@ -67,16 +68,7 @@ const Register = (props) => {
             },
         });
     };
-    const openNotificationSuccess = (message) => {
-        notification.success({
-            message: message,
-            description:
-                "",
-            onClick: () => {
-                console.log('Notification Clicked!');
-            },
-        });
-    };
+
     let usernameExists = async (value) => {
         if (!contract) {
             let contractTemp = await getContractByName("user", state.api,)
@@ -118,12 +110,12 @@ const Register = (props) => {
         setIsExist(isExist)
         return isExist
     }
-    const checkPassword = async (value, fn) => {
-        if (value != form.getFieldValue("password")) {
-            fn("Confirm password error ")
-        } else {
-            fn()
+    const handleDealMethod = async (name, params) => {
+        let contractTemp = await getContractByName("user", state.api,)
+        if (!contractTemp) {
+            openNotification("please connect")
         }
+        dealMethod(contractTemp, state.account, name, params)
     }
     let handlePost = async () => {
         let {userName, BIO, Email, Twitter, telegram, Website} = {...(form.getFieldsValue())}
@@ -162,10 +154,7 @@ const Register = (props) => {
             feeValue = await fee()
             console.log(feeValue / 10 ** 18)
         }
-        if (!contract) {
-            let contractTemp = await getContractByName("user", state.api,)
-            await setContract(contractTemp)
-        }
+
         const hide1 = message.loading('Upload User Info', 0);
         let jsonUrl = await uploadJson({
             name: userName,
@@ -177,33 +166,12 @@ const Register = (props) => {
         })
 
         setTimeout(hide1, 1000);
+        handleDealMethod("register",[userName, Email, jsonUrl.IpfsHash,"https://bafybeidfb33il2jgd5b2b5tgnijgkas2koy7x42njrbbicpp354jz4ncou.ipfs.nftstorage.link/0.json"])
 
-        const hide3 = message.loading('wait sign', 0);
-        contract.methods.register(userName, Email, jsonUrl.IpfsHash).estimateGas({
-            from: state.account,
-            value: feeValue
-        }).then(gas => {
-            contract.methods.register(userName, Email, jsonUrl.IpfsHash).send({
-                from: state.account,
-                gas: parseInt(gas * 1.2),
-                value: state.api.utils.toBN(feeValue)
-            }).then(async res => {
-                console.log(res)
-                openNotificationSuccess("register success")
-                setTimeout(hide3, 1000);
-            }).catch(e => {
-                console.log(e)
-                setTimeout(hide3, 1000);
-            })
-        }).catch(e => {
-            console.log(e)
-            openNotification(e.message)
-            setTimeout(hide3, 1000);
-        })
 
     };
     const getFile = (e) => {
-        console.log(e.target.files)
+        console.log(e.target.files) 
         uploadFile(e.target.files[0])
     }
     const Table = () => {

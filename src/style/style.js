@@ -42,6 +42,13 @@ const GlobalStyle = createGlobalStyle`
     padding: 3em;
     margin: 3em 5em ;
     opacity: 0.95;
+    .panel-title{
+      font-size: 24px;
+      font-family: Helvetica-Bold, Helvetica;
+      font-weight: bold;
+      color: #FFFFFF;
+      line-height: 29px;
+    }
   }
   .flex-box{
     display: flex;

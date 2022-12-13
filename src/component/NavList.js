@@ -28,6 +28,7 @@ const items = [
         getItem('Mint FireSoul', 'createFireSoul'),
         getItem('PID List', 'PIDList'),
         getItem('My FireSeed', 'myFireSeed'),
+        getItem('My Passport', 'MyPassport'),
     ]),
     getItem('CreateLock', 'CreateLock', <img className="fireIcon" src={fireIcon2} />),
 

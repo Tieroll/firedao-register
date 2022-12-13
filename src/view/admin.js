@@ -1,13 +1,18 @@
 import React, {useEffect, useRef, useState} from 'react';
 import styled from "styled-components";
 import {useConnect} from "../api/contracts";
-import {Card, Button,Switch , message, Form, Input, notification} from 'antd';
+import {Card, Button, Switch, message, Form, Input, notification} from 'antd';
 import {getContractByName} from "../api/connectContract";
-import {dealMethod} from "../utils/contractUtil"
+import {dealMethod,viewMethod } from "../utils/contractUtil"
 
 const AdminPage = (props) => {
     const [form] = Form.useForm();
     const [form2] = Form.useForm();
+    const [form3] = Form.useForm();
+    const [form4] = Form.useForm();
+    const [form5] = Form.useForm();
+    const [form6] = Form.useForm();
+    const [form7] = Form.useForm();
     const AdminPage = styled.div`
       .info-box {
         width: 1200px;
@@ -22,16 +27,7 @@ const AdminPage = (props) => {
     let {state, dispatch} = useConnect();
     const [contract, setContract] = useState(null)
     const [feeOn, setFeeOn] = useState(false)
-    const openNotificationSuccess = (message) => {
-        notification.success({
-            message: message,
-            description:
-                "",
-            onClick: () => {
-                console.log('Notification Clicked!');
-            },
-        });
-    };
+
     const openNotification = (message) => {
         notification.error({
             message: message,
@@ -42,27 +38,39 @@ const AdminPage = (props) => {
             },
         });
     };
-    const handleDealMethod = async (name,params)=>{
-        if (!contract) {
-            let contractTemp = await getContractByName("user", state.api,)
-            if(!contractTemp){
-                openNotification("please connect")
-            }
-            await setContract(contractTemp)
+    const handleDealMethod = async (name, params) => {
+        let contractTemp = await getContractByName("user", state.api,)
+        if (!contractTemp) {
+            openNotification("please connect")
         }
-        dealMethod(contract,state.account,name,params)
+        await setContract(contractTemp)
+        dealMethod(contractTemp, state.account, name, params)
+    }
+    const handleDealReputationMethod = async (name, params) => {
+        let contractTemp = await getContractByName("Reputation", state.api,)
+        if (!contractTemp) {
+            openNotification("please connect")
+        }
+        await setContract(contractTemp)
+        dealMethod(contractTemp, state.account, name, params)
+    }
+    const handleViewReputationMethod = async (name, params) => {
+        let contractTemp = await getContractByName("Reputation", state.api,)
+        if (!contractTemp) {
+            openNotification("please connect")
+        }
+        await setContract(contractTemp)
+       return  viewMethod(contractTemp, state.account, name, params)
     }
     const handleSetFee = async () => {
         if (!contract) {
             let contractTemp = await getContractByName("user", state.api,)
-            if(!contractTemp){
+            if (!contractTemp) {
                 openNotification("please connect")
             }
             await setContract(contractTemp)
         }
         console.log(contract)
-
-
         let {Fee} = {...(form.getFieldsValue())}
         handleDealMethod("setFee", [Fee])
     }
@@ -78,7 +86,7 @@ const AdminPage = (props) => {
 
         handleDealMethod("setFeeOn", [feeOn])
     }
-    const changeFeeReceiver= async () => {
+    const changeFeeReceiver = async () => {
         if (!contract) {
             let contractTemp = await getContractByName("user", state.api,)
             await setContract(contractTemp)
@@ -88,8 +96,23 @@ const AdminPage = (props) => {
         handleDealMethod("changeFeeReceiver", [Address])
 
     }
+    const addSBTAddress = async () => {
+        handleDealReputationMethod("addSBTAddress", [form3.getFieldValue()._sbt, form3.getFieldValue()._coefficient])
+    }
+    const setSBTAddress = async () => {
+        handleDealReputationMethod("setSBTAddress", [form4.getFieldValue().num, form4.getFieldValue()._sbt])
+    }
+    const setCoefficient= async () => {
+        handleDealReputationMethod("setCoefficient", [form5.getFieldValue().num, form5.getFieldValue()._coefficient])
+    }
+    const checkReputation= async () => {
+        let res = await handleViewReputationMethod("checkReputation", [form6.getFieldValue().user, ])
+        alert(res)
+    }
     return (
         <AdminPage>
+
+            <h2>User</h2>
             <Card title="setFee修改费用" extra={<a href="#"></a>} style={{width: "50vw"}}>
                 <Form form={form} name="control-hooks">
                     <div className="input-box">
@@ -112,7 +135,7 @@ const AdminPage = (props) => {
                 }}>修改</Button>
             </Card>
             <Card title="setFeeOn费用开关" extra={<a href="#"></a>} style={{width: "50vw"}}>
-                <Switch defaultChecked onChange={onChange} />
+                <Switch defaultChecked onChange={onChange}/>
                 <Button onClick={() => {
                     handleSetFeeOn()
                 }}>打开/关闭</Button>

@@ -21,7 +21,6 @@ import {useNavigate} from "react-router-dom";
 import FireSoul from "../imgs/FireSoul@2x.png"
 
 const MintFireSoul = (props) => {
-    const [form] = Form.useForm();
 
     const MintFireSoul = styled.div`
       width: 100%;
@@ -53,13 +52,46 @@ const MintFireSoul = (props) => {
           width: 50%;
         }
       }
+      .select-box{
+        width: 300px;
+        .select-content{
+          height: 30px;
+          border: 1px solid #434343;
+          padding: 3px 12px;
+          color:#999;
+          background: none;
+        }
+        .select-list{
+          position: absolute;
+          width: 100%;
+          max-height: 300px;
+          overflow: auto;
+          z-index: 1;
+        }
+        .select-item{
+          display: flex;
+          justify-content: space-between;
+          width: 100%;
+          height: 30px;
+          border: 1px solid #434343;
+          padding: 3px 12px;
+          background: #000;
+       
+          &:nth-child(n+1){
+            border-top: none;
+          }
+        }
+      }
     `
     const history = useNavigate();
+    const [form] = Form.useForm();
 
     let {state, dispatch} = useConnect();
     const [fee, setFee] = useState(0.1)
     const [list, setList] = useState([])
+    const [isFocusSelect, setFocusSelect] = useState(false)
     const [balance, setBalance] = useState([])
+    const [chooseId, setId] = useState(undefined)
     const handleViewMethod = async (name, params) => {
         let contractTemp = await getContractByName("mintFireSeed", state.api,)
         if (!contractTemp) {
@@ -78,7 +110,7 @@ const MintFireSoul = (props) => {
 
 
     const Mint = async () => {
-        handleDealMethod("burnToMint", [form.getFieldValue().fireseedId])
+        handleDealMethod("burnToMint", [chooseId])
     }
 
     const ownerNFT = async () => {
@@ -104,13 +136,15 @@ const MintFireSoul = (props) => {
     useEffect(() => {
         ownerNFT()
     }, [state.account]);
-    const onChange = async (value) => {
-        list.forEach(item => {
-            if (item.label == value) {
-                setBalance(item.balance)
-            }
-        })
-    };
+
+    const focusSelect = ()=>{
+        setFocusSelect(true)
+    }
+    const chooseSelect = (item)=>{
+        setFocusSelect(false)
+        setId(item.label)
+        setBalance(item.balance)
+    }
     return (
         <MintFireSoul>
             <div className="panel-box ">
@@ -138,14 +172,25 @@ const MintFireSoul = (props) => {
                             label="Your FireSeedID:"
 
                         >
-                            <Select
-                                showSearch
-                                placeholder="Select a FireSeedID"
-                                onChange={(e)=>{
-                                    onChange(e)
-                                }}
-                                options={list}
-                            />
+                            <div className="select-box">
+                                <input readOnly value={chooseId} className="select-content" onFocus={focusSelect} placeholder="Select a FireSeedID"/>
+
+                                {isFocusSelect&&(
+                                    <div className="select-list">
+                                        {list.map(item=>{
+                                            return (
+                                                <div onClick={()=>{
+                                                    chooseSelect(item)
+                                                }} className="select-item" value={item.value}>
+                                                    <div>{item.label}</div>
+                                                    <div>×{item.balance}</div>
+                                                </div>
+                                            )
+                                        })}
+                                    </div>
+                                )}
+                            </div>
+
                         </Form.Item>
                         <Form.Item
                             name="amount"
