@@ -127,6 +127,9 @@ const SbtAdmin = (props) => {
     const setCoefficient= async () => {
         handleDealReputationMethod("setCoefficient", [form5.getFieldValue().num-1, form5.getFieldValue()._coefficient])
     }
+    const transferOwnership = async () => {
+        handleDealReputationMethod("transferOwnership", [form7.getFieldValue().address])
+    }
     const changeCoe =  async (item,index) => {
         return
         handleDealReputationMethod("setCoefficient", [index,item.coefficient])
@@ -317,6 +320,28 @@ const SbtAdmin = (props) => {
                 <Button onClick={() => {
                     checkReputation()
                 }}>查看</Button>
+            </Card>
+            <Card title="transferOwnership转移管理员吧" extra={<a href="#"></a>} style={{width: "50vw"}}>
+                <Form form={form7} name="control-hooks">
+                    <div className="input-box">
+                        <Form.Item
+                            name="address"
+                            label="address"
+                            validateTrigger="onBlur"
+                            validateFirst={true}
+                            rules={[
+                                {required: true, message: 'Please input address!'},
+                            ]}
+
+                        >
+                            <Input/>
+                        </Form.Item>
+
+                    </div>
+                </Form>
+                <Button onClick={() => {
+                    transferOwnership()
+                }}>转移</Button>
             </Card>
         </SbtAdmin>
     )

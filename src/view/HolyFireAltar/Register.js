@@ -1,17 +1,17 @@
 import React, {useEffect, useRef, useState} from 'react';
 import styled from "styled-components";
-import {useConnect} from "../api/contracts";
-import {getContractByName} from "../api/connectContract"
+import {useConnect} from "../../api/contracts";
+import {getContractByName} from "../../api/connectContract"
 import {Button, Form, message, Input, Tooltip, notification} from 'antd';
-import {uploadJson, uploadFile} from "../utils/ipfsApi"
-import firepassport from "../imgs/passport@2x.png"
+import {uploadJson, uploadFile} from "../../utils/ipfsApi"
+import firepassport from "../../imgs/passport@2x.png"
 import {useNavigate} from 'react-router-dom'
 import {
     TwitterOutlined,
     SendOutlined,
     UserOutlined
 } from '@ant-design/icons';
-import {dealMethod} from "../utils/contractUtil";
+import {dealMethod} from "../../utils/contractUtil";
 
 const Register = (props) => {
     const [form] = Form.useForm();
@@ -171,7 +171,7 @@ const Register = (props) => {
 
     };
     const getFile = (e) => {
-        console.log(e.target.files) 
+        console.log(e.target.files)
         uploadFile(e.target.files[0])
     }
     const Table = () => {

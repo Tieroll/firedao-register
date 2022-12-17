@@ -1,6 +1,6 @@
 import React, {useEffect, useRef, useState} from 'react';
 import styled from "styled-components";
-import {useConnect} from "../api/contracts";
+import {useConnect} from "../../api/contracts";
 import {
     Card,
     Select,
@@ -15,10 +15,10 @@ import {
     Switch,
     Radio
 } from 'antd';
-import {getContractByName, getContractByContract} from "../api/connectContract";
-import {dealPayMethod, dealMethod, viewMethod} from "../utils/contractUtil"
+import {getContractByName, getContractByContract} from "../../api/connectContract";
+import {dealPayMethod, dealMethod, viewMethod} from "../../utils/contractUtil"
 import {useNavigate} from "react-router-dom";
-import FireSoul from "../imgs/FireSoul@2x.png"
+import FireSoul from "../../imgs/FireSoul@2x.png"
 
 const MintFireSoul = (props) => {
 

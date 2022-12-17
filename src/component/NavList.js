@@ -27,6 +27,8 @@ const items = [
         getItem('Mint FireSeed', 'mintFireSeed'),
         getItem('Mint FireSoul', 'createFireSoul'),
         getItem('PID List', 'PIDList'),
+        getItem('FID List', 'FIDList'),
+        getItem('SBT List', 'SBTList'),
         getItem('My FireSeed', 'myFireSeed'),
         getItem('My Passport', 'MyPassport'),
     ]),

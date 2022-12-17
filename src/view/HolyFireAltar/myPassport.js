@@ -1,11 +1,11 @@
 import React, {useEffect, useRef, useState} from 'react';
 import styled from "styled-components";
-import {useConnect} from "../api/contracts";
+import {useConnect} from "../../api/contracts";
 import {Card, Button, Descriptions, message, Form, List, Input, notification} from 'antd';
 import {SendOutlined, TwitterOutlined, UserOutlined} from "@ant-design/icons";
-import {getContractByName, getContractByContract} from "../api/connectContract";
-import {dealMethod, viewMethod} from "../utils/contractUtil"
-import {getIpfs} from "../utils/ipfsApi";
+import {getContractByName, getContractByContract} from "../../api/connectContract";
+import {dealMethod, viewMethod} from "../../utils/contractUtil"
+import {getIpfs} from "../../utils/ipfsApi";
 
 const MyPassport = (props) => {
     const [form] = Form.useForm();
@@ -52,6 +52,7 @@ const MyPassport = (props) => {
           }
         }
       }
+      
     `
     let {state, dispatch} = useConnect();
     const [userInfo, setUserInfo] = useState({})

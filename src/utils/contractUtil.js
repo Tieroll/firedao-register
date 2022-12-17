@@ -2,7 +2,7 @@ import {message, notification} from "antd";
 import {dealError} from "./dealResult";
 
 export function dealMethod(contract,account,methodName,params){
-    console.log(contract,account,methodName,params)
+    console.log(account,methodName,params)
     const hide3 = message.loading('wait sign', 0);
     try{
         contract.methods[methodName](...params).estimateGas({
@@ -40,7 +40,7 @@ export function dealMethod(contract,account,methodName,params){
     }
 }
 export function dealPayMethod(contract,account,methodName,params,value){
-    console.log(contract,account,methodName,params)
+    console.log(account,methodName,params)
     const hide3 = message.loading('wait sign', 0);
     try{
         contract.methods[methodName](...params).estimateGas({
@@ -80,7 +80,7 @@ export function dealPayMethod(contract,account,methodName,params,value){
     }
 }
 export async function  viewMethod(contract,account,methodName,params){
-    console.log(contract,account,methodName,params)
+    console.log(account,methodName,params)
     try{
          const res =   await contract.methods[methodName](...params).call({
             from: account,
