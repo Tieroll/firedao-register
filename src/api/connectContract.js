@@ -6,7 +6,7 @@ const CONTRACTS =addressMap
 function getContractByName(name, web3) {
     if(!web3){
         notification.error({
-            message: "please Connect",
+            message: "Please connect",
             description:
                 "",
         });

@@ -58,7 +58,7 @@ const SbtAdmin = (props) => {
     const handleDealMethod = async (name, params) => {
         let contractTemp = await getContractByName("user", state.api,)
         if (!contractTemp) {
-            openNotification("please connect")
+            openNotification("Please connect")
         }
         await setContract(contractTemp)
         dealMethod(contractTemp, state.account, name, params)
@@ -66,7 +66,7 @@ const SbtAdmin = (props) => {
     const handleDealReputationMethod = async (name, params) => {
         let contractTemp = await getContractByName("Reputation", state.api,)
         if (!contractTemp) {
-            openNotification("please connect")
+            openNotification("Please connect")
         }
         await setContract(contractTemp)
         dealMethod(contractTemp, state.account, name, params)
@@ -74,7 +74,7 @@ const SbtAdmin = (props) => {
     const handleViewReputationMethod = async (name, params) => {
         let contractTemp = await getContractByName("Reputation", state.api,)
         if (!contractTemp) {
-            openNotification("please connect")
+            openNotification("Please connect")
         }
         await setContract(contractTemp)
         return  viewMethod(contractTemp, state.account, name, params)
@@ -83,7 +83,7 @@ const SbtAdmin = (props) => {
         if (!contract) {
             let contractTemp = await getContractByName("user", state.api,)
             if (!contractTemp) {
-                openNotification("please connect")
+                openNotification("Please connect")
             }
             await setContract(contractTemp)
         }

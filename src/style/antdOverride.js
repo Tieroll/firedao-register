@@ -29,5 +29,30 @@ const AntdOverride = createGlobalStyle`
   .ant-menu-dark .ant-menu-inline.ant-menu-sub{
     background: #150D0D ;
   }
+
+  .ant-message-notice{
+
+    .ant-message-notice-content{
+      background: rgba(0,0,0,0.8);
+      border-radius: 20px;
+      padding: 1em 1.5em;
+      .ant-message-custom-content{
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        .anticon{
+          font-size: 22px;
+        }
+        span{
+          margin-top: 0.5em;
+          font-size: 16px;
+        }
+      }
+     
+    }
+    &:nth-child(1){
+      margin-top: 20vh;
+    }
+  }
 `
 export default AntdOverride

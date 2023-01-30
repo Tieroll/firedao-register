@@ -3,5 +3,11 @@ module.exports = {
     apiError: null,
     apiState: null,
     account:"",
-    networkId:null
+    ethBalance:0,
+    myRecommender:"",
+    pid:undefined,
+    fid:undefined,
+    fireSeedList:[],
+    networkId:null,
+    userInfo:{}
 };

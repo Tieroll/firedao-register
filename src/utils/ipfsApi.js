@@ -2,6 +2,7 @@
 import useSWR from "swr"
 import jsonp from "jsonp";
 import $ from 'jquery'
+import {message} from "antd";
 
 function upload() {
 
@@ -15,15 +16,19 @@ const config = {
 
 
 export async function getIpfs(strHash) {
-    if (strHash && strHash.length > 5 && typeof strHash == "string") {
-        let result = await $.get(`https://cloudflare-ipfs.com/ipfs/${strHash}#x-ipfs-companion-no-redirect`, {}).catch(e => {
-            console.log(e)
-            alert("get ipfs err")
-        })
+    try{
+        if (strHash && strHash.length > 5 && typeof strHash == "string") {
+            let result = await $.get(`https://gateway.pinata.cloud/ipfs/${strHash}#x-ipfs-companion-no-redirect`, {}).catch(e => {
+                console.log(e)
+                message.error("get ipfs info err")
+            })
 
-        return result
-    } else {
-        return false
+            return result
+        } else {
+            return false
+        }
+    }catch (e){
+        console.log(e)
     }
 
 }

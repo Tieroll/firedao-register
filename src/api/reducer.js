@@ -12,6 +12,18 @@ const reducer = (state, action) => {
             return {...state, account: action.payload};
         case "SET_NETWORKID":
             return {...state, networkId: action.payload};
+        case "SET_ETHBALANCE":
+            return {...state, ethBalance: action.payload};
+        case "SET_PID":
+            return {...state, pid: action.payload};
+        case "SET_FID":
+            return {...state, fid: action.payload};
+        case "SET_FIREDSEEDLIST":
+            return {...state, fireSeedList: action.payload};
+        case "SET_MyRecommender":
+            return {...state, myRecommender: action.payload};
+        case "SET_USERINFO":
+            return {...state, userInfo: action.payload};
     }
 }
 export default reducer

@@ -27,13 +27,31 @@ const connect = async (state, dispatch) => {
     }catch (e){
         openNotification(e)
     }
+    window.ethereum.on('chainChanged', (netWarkId) => {
+        if(netWarkId){
+            netWarkId = netWarkId.substr(netWarkId.indexOf("x",netWarkId.length))
+        }
+        dispatch({type: "SET_NETWORKID", payload: netWarkId})
+
+    });
     await getWeb3().then(result => {
-        console.log(result.web3)
         dispatch({type: "CONNECT", payload: result.web3})
 
         window.ethereum.on('accountsChanged', (accounts) => {
             dispatch({type: "SET_ACCOUNT", payload: accounts[0]})
+            result.web3.eth.getAccounts().then(async res=>{
+                let balance =await result.web3.eth.getBalance(res[0])
+                dispatch({type:"SET_ETHBALANCE",payload:balance/10**18})
+            })
         });
+        window.ethereum.on('chainChanged', () => {
+            result.web3.eth.getAccounts().then(async res=>{
+                let balance =await result.web3.eth.getBalance(res[0])
+                dispatch({type:"SET_ETHBALANCE",payload:balance/10**18})
+            })
+
+        });
+
         result.web3.eth.net.getId().then(async netWarkId => {
             console.log(netWarkId)
             if(netWarkId!=5){
@@ -44,8 +62,9 @@ const connect = async (state, dispatch) => {
             }
             dispatch({type: "SET_NETWORKID", payload: netWarkId})
         })
-        result.web3.eth.getAccounts().then(res=>{
-            console.log(res)
+        result.web3.eth.getAccounts().then(async res=>{
+            let balance =await result.web3.eth.getBalance(res[0])
+            dispatch({type:"SET_ETHBALANCE",payload:balance/10**18})
         })
 
         result.web3.eth.getCoinbase().then(account => {

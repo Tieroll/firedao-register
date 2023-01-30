@@ -1,108 +1,195 @@
 import React, {useEffect, useRef, useState} from 'react';
 import styled from "styled-components";
 import {useConnect} from "../../api/contracts";
-import {getContractByName} from "../../api/connectContract"
-import {Button, Form, message, Input, Tooltip, notification} from 'antd';
+import {getContractByContract, getContractByName} from "../../api/connectContract"
+import {Button, Form, message, Input, Tooltip, notification, Select} from 'antd';
 import {uploadJson, uploadFile} from "../../utils/ipfsApi"
-import firepassport from "../../imgs/passport@2x.png"
+import firepassport from "../../imgs/passport@2x.webp"
 import {useNavigate} from 'react-router-dom'
+import addressMap from "../../api/addressMap";
 import {
     TwitterOutlined,
     SendOutlined,
-    UserOutlined
+    UserOutlined,
+    LoadingOutlined
 } from '@ant-design/icons';
-import {dealMethod} from "../../utils/contractUtil";
-
+import {dealMethod, viewMethod,dealPayMethod} from "../../utils/contractUtil";
+import ConnectWallet from "../../component/ConnectWallet";
 const Register = (props) => {
     const [form] = Form.useForm();
     const DaoHome = styled.div`
-      .tip {
-        padding: 1em 0;
-        text-align: center;
-        margin-top: -20px;
-        color: orangered;
-      }
 
       .content-box {
         display: flex;
-        padding: 2em;
+        padding: 2em 0;
 
         .left {
-          width: 40%;
+          width: 50%;
+          padding-right: 5%;
 
-          img {
-            width: 80%;
-            margin: 0 auto;
+          .img-box {
+            border-radius: 5%;
+            box-shadow: 0px 0 10px 1px #d84a1b;
+            padding: 2px;
+
+            img {
+              border-radius: 20px;
+              width: 100%;
+              margin: 0 auto;
+            }
+          }
+
+          .nft-detail {
+            font-size: 14px;
+            margin-top: 2em;
+
+            .title {
+              font-size: 20px;
+            }
+
+            .content-item {
+              display: flex;
+              justify-content: space-between;
+              margin: 1em 0;
+              text-align: right;
+
+              .name {
+                color: #999;
+                white-space: nowrap;
+              }
+
+              .value {
+                max-width: 64%;
+              }
+
+              .address {
+                a {
+                  color: #FF9260;
+                }
+              }
+            }
+          }
+
+        }
+
+        .right {
+          width: 50%;
+          display: flex;
+         
+          .mint-tip {
+            text-align: center;
+            padding: 5em 0 1em;
+            margin-top: -20px;
+            color: #856465;
+            display: flex;
+            justify-content: center;
+            span {
+              color: #fff;
+            }
+            .choosePayType{
+              margin-top: -4px;
+              .ant-form-item-label{
+                display: none;
+              }
+              .ant-form-item-control-input {
+                background: none!important;
+                min-height: 20px!important;
+                .ant-select-selector{
+                  border: none;
+                }
+              }
+            }
           }
         }
       }
 
-      .connect {
-        margin: 1em auto;
+      .username {
+        padding: 0 20px;
       }
 
-      .subBtn {
-        padding: 0 2em;
-        height: 2em;
-        width: 12em;
-        font-size: 1.5em;
-        margin-top: 1em;
-      }
-    `
+      .button-box {
+        text-align: center;
 
-    let {state, dispatch} = useConnect();
-    const history = useNavigate();
-    const [isExist, setIsExist] = useState(false)
-    const [contract, setContract] = useState(null)
-    const [solName, setSolname] = useState(undefined)
-    const goUserInfo = () => {
-        history("/UserInfo");
-    }
-    const openNotification = (message) => {
-        notification.error({
-            message: message,
-            description:
-                "",
-            onClick: () => {
-                console.log('Notification Clicked!');
-            },
-        });
-    };
-
-    let usernameExists = async (value) => {
-        if (!contract) {
-            let contractTemp = await getContractByName("user", state.api,)
-            await setContract(contractTemp)
+        .subBtn {
+          padding: 0 4em;
+          border-radius: 10px;
+          margin: 0 auto;
+          &.grey-status{
+            
+          }
         }
-        return contract.methods.usernameExists(value).call({
+      }
+
+    `
+    const [messageApi] = message.useMessage();
+    let {state, dispatch} = useConnect();
+    const [isExist, setIsExist] = useState(false)
+    const [solName, setSolname] = useState(undefined)
+    const [fee, setFee] = useState(0.008)
+    const [wethBalance, setWethBalance] = useState(0)
+    const [status, setStatus] = useState(0)
+    const [isLoading, setIsLoading] = useState(false)
+    const history = useNavigate();
+    const goPage = (url) => {
+        history(url);
+    }
+    const openMessageError = (content) => {
+        message.warn(content, 5)
+    };
+    const handleDealMethod = async (name, params) => {
+        let contractTemp = await getContractByName("user", state.api,)
+        if (!contractTemp) {
+            openMessageError("Please connect")
+        }
+        await dealMethod(contractTemp, state.account, name, params)
+    }
+    const handleViewMethod = async (name, params) => {
+        let contractTemp = await getContractByName("user", state.api,)
+        if (!contractTemp) {
+            openMessageError("Please connect")
+        }
+        return await viewMethod(contractTemp, state.account, name, params)
+    }
+    const handleCoinViewMethod = async (name, params) => {
+        let contractTemp = await getContractByName("WETH",  state.api,)
+        return viewMethod(contractTemp, state.account, name, params)
+    }
+    const handleDealPayMethod = async (name, params, fee) => {
+        let contractTemp = await getContractByName("user", state.api,)
+        if (!contractTemp) {
+            openMessageError("Please connect")
+        }
+        await dealPayMethod(contractTemp, state.account, name, params, state.api.utils.toWei(fee.toString()))
+    }
+    let usernameExists = async (value) => {
+        let contractTemp = await getContractByName("user", state.api,)
+        if (!contractTemp) {
+            openMessageError("Please connect")
+        }
+        return contractTemp.methods.usernameExists(value).call({
             from: state.account,
         })
     }
     const feeOn = async () => {
-        if (!contract) {
-            let contractTemp = await getContractByName("user", state.api,)
-            await setContract(contractTemp)
-        }
-        return contract.methods.feeOn().call({
-            from: state.account,
-        })
+        return await handleViewMethod("feeOn",[])
     }
-    const fee = async (value) => {
-        if (!contract) {
-            let contractTemp = await getContractByName("user", state.api,)
-            await setContract(contractTemp)
-        }
-        return contract.methods.fee().call({
-            from: state.account,
-        })
+    const getFee = async () => {
+        return await  handleViewMethod("fee",[])
     }
     const checkUserName = async (value, fn) => {
+        if(!value){
+            return
+        }
         let name = value ? value.toString().toLowerCase() : ""
         setSolname(value.toString().toLowerCase())
         const isExist = await usernameExists(name)
 
+        if (!(/^[A-Za-z]+$/.test(value.substr(0, 1)))) {
+            openMessageError("The first character of the user name must be a letter")
+            return
+        }
         if (isExist) {
-            openNotification("userName is exist")
+            openMessageError("userName is exist")
             fn("userName is exist")
         } else {
             fn()
@@ -110,69 +197,127 @@ const Register = (props) => {
         setIsExist(isExist)
         return isExist
     }
-    const handleDealMethod = async (name, params) => {
-        let contractTemp = await getContractByName("user", state.api,)
-        if (!contractTemp) {
-            openNotification("please connect")
-        }
-        dealMethod(contractTemp, state.account, name, params)
-    }
-    let handlePost = async () => {
-        let {userName, BIO, Email, Twitter, telegram, Website} = {...(form.getFieldsValue())}
 
-        let errList = form.getFieldsError()
-        let isPass = true
-        for (let i = 0; i < errList.length; i++) {
-            if (errList[i].errors.length > 0) {
-                errList[i].errors.forEach(err => {
-                    openNotification(err)
-                })
-                isPass = false
-            }
-        }
-        if (!isPass) {
-            return
-        }
-        if (!userName || userName.length < 4) {
-            return
-        }
+    const handlePost = async () => {
+      try{
+          setIsLoading(true)
+          let {userName, BIO, Email, Twitter, telegram, Website, paytype} = {...(form.getFieldsValue())}
+          if (!paytype) {
+              paytype = 1
+          }
+          let errList = form.getFieldsError()
+          let isPass = true
+          for (let i = 0; i < errList.length; i++) {
+              if (errList[i].errors.length > 0) {
+                  errList[i].errors.forEach(err => {
+                      openMessageError(err)
+                  })
+                  isPass = false
+              }
+          }
+          let exist = await checkUserName(userName, () => {
+          })
 
-        if (!Email ) {
-            openNotification("Please input Email")
-            return
-        }
-        let exist = await checkUserName(userName, () => {
-        })
-        if (exist) {
-            openNotification("username is exist")
-            return
-        }
-
-        const isOpenFeeOn = await feeOn()
-        let feeValue = 0
-        if (isOpenFeeOn) {
-            feeValue = await fee()
-            console.log(feeValue / 10 ** 18)
-        }
-
-        const hide1 = message.loading('Upload User Info', 0);
-        let jsonUrl = await uploadJson({
-            name: userName,
-            BIO,
-            Email,
-            Twitter,
-            telegram,
-            Website
-        })
-
-        setTimeout(hide1, 1000);
-        handleDealMethod("register",[userName, Email, jsonUrl.IpfsHash,"https://bafybeidfb33il2jgd5b2b5tgnijgkas2koy7x42njrbbicpp354jz4ncou.ipfs.nftstorage.link/0.json"])
+          if (!isPass || (!userName || userName.length < 4) ||exist) {
+              openMessageError("Check the form content")
+              setIsLoading(false)
+              return
+          }
 
 
+          if (!(/^[A-Za-z]+$/.test(userName.substr(0, 1)))) {
+              openMessageError("The first character of the user name must be a letter")
+              setIsLoading(false)
+              return
+          }
+          if (!Email) {
+              openMessageError("Please input Email")
+              setIsLoading(false)
+              return
+          }
+          if(!/^[a-zA-Z0-9_-]+@[a-zA-Z0-9_-]+(\.[a-zA-Z0-9_-]+)+$/.test(Email)){
+              openMessageError("Please input right Email")
+              setIsLoading(false)
+              return
+          }
+
+          const hide1 = message.loading('Upload User Info', 0);
+          let jsonUrl = await uploadJson({
+              name: userName,
+              BIO,
+              Email,
+              Twitter,
+              telegram,
+              Website
+          })
+
+          setTimeout(hide1, 1000);
+
+          if (paytype == 1) {
+              const isOpenFeeOn = await feeOn()
+              let feeValue = 0
+
+              if (isOpenFeeOn) {
+                  feeValue = await getFee()
+                  await handleDealPayMethod("register",
+                      [userName, Email, jsonUrl.IpfsHash],
+                      feeValue / 10 ** 18)
+                  goPage('/MyPassport')
+                  setIsLoading(false)
+                  return
+              }
+          }
+          await handleDealMethod("register", [userName, Email, jsonUrl.IpfsHash])
+          goPage('/MyPassport')
+          setIsLoading(false)
+      }catch (e){
+          setIsLoading(false)
+      }
     };
-    const getFile = (e) => {
-        console.log(e.target.files)
-        uploadFile(e.target.files[0])
+
+    const getData = async () => {
+        const isOpenFeeOn = await feeOn()
+        if (isOpenFeeOn) {
+            let feeValue = await getFee() / 10 ** 18
+            setFee(feeValue)
+        }
+    }
+    const getWeth= async ()=>{
+        let balance =  await handleCoinViewMethod("balanceOf",[state.account])
+        setWethBalance(balance/10**18)
+    }
+    useEffect(() => {
+        if(status==3){
+            getData()
+            getWeth()
+        }
+
+    }, [state.account,status]);
+    //check can submit
+    useEffect(() => {
+        if(state.account&&state.apiState == "READY"){
+            if( state.networkId == 5){
+                if(state.ethBalance > 0.009){
+                    setStatus(3)
+                }else{
+                    setStatus(2)
+                }
+            }else{
+                setStatus(1)
+            }
+        }else{
+            setStatus(0)
+        }
+    }, [state.account,state.networkId,state.apiState,state.ethBalance]);
+    const checkMintInfo = async ()=>{
+        if(state.networkId !== 5){
+            openMessageError("The testnet is not available now, please connect to Goerli Testnet.")
+            return
+        }
+        if(state.apiState !== "READY"){
+            openMessageError("Please connect")
+            return
+        }
     }
     const Table = () => {
 
@@ -181,7 +326,7 @@ const Register = (props) => {
             <Form form={form} name="control-hooks">
                 <Form.Item
                     name="userName"
-                    label="Forum usename"
+                    label="Forum Username"
                     validateTrigger="onBlur"
                     validateFirst={true}
                     rules={[
@@ -205,49 +350,12 @@ const Register = (props) => {
                     />
                 </Form.Item>
                 <Form.Item
-                    name="userName"
-                    label="FireDAO usename">
-                    {solName}
+                    label="FireDAO Username">
+                    <div className="username">
+                        {solName}
+                    </div>
                 </Form.Item>
-                {/*<Form.Item*/}
-                {/*    name="password"*/}
-                {/*    label="Password"*/}
-                {/*    rules={[{required: true, message: 'Please input your password!'},*/}
-                {/*        {min: 8, message: "password length need > 8"},*/}
-                {/*        {*/}
-                {/*            pattern: new RegExp("^(?![0-9]+$)(?![a-zA-Z]+$)[0-9A-Za-z\\W]{6,18}$"),*/}
-                {/*            message: ' must include letters and numbers Or special characters'*/}
-                {/*        },]}*/}
-                {/*>*/}
-                {/*    <Input.Password*/}
 
-                {/*    />*/}
-                {/*</Form.Item>*/}
-                {/*<Form.Item*/}
-                {/*    name="subpassword"*/}
-                {/*    label="Sub Password"*/}
-                {/*    validateTrigger="onBlur"*/}
-                {/*    rules={[{required: true, message: 'Please input your sub password!'},*/}
-                {/*        {*/}
-                {/*            validator: (rule, value, fn) => {*/}
-                {/*                checkPassword(value, fn)*/}
-                {/*            }*/}
-                {/*        },]}*/}
-                {/*>*/}
-                {/*    <Input.Password*/}
-                {/*    />*/}
-                {/*</Form.Item>*/}
-                <Form.Item
-                    name="BIO"
-                    label="BIO"
-                    rules={[
-                        {max: 200, message: "BIO length need < 200"},]}
-                >
-                    <TextArea
-                        allowClear
-
-                    />
-                </Form.Item>
                 <Form.Item
                     name="Email"
                     label=" Email"
@@ -260,8 +368,16 @@ const Register = (props) => {
                         }
                     ]}
                 >
-                    <Input
-                    />
+                    <Input/>
+                </Form.Item>
+                <Form.Item
+                    name="BIO"
+                    label="Bio"
+                    initialValue={"Let's build the Bit Civilization together!"}
+                    rules={[
+                        {max: 200, message: "BIO length need < 200"},]}
+                >
+                    <TextArea allowClear defaultValue={"Let's build the Bit Civilization together!"}/>
                 </Form.Item>
                 <Form.Item
                     name="Twitter"
@@ -286,45 +402,114 @@ const Register = (props) => {
                 <Form.Item
                     name="Website"
                     label="Website"
+                    initialValue={"www.FireDAO.co"}
                     rules={[
                         {max: 50, message: "Website length need < 50"},]}
                 >
-                    <Input
-                    />
+                    <Input defaultValue={"www.FireDAO.co"}/>
                 </Form.Item>
-                <Form.Item wrapperCol={{offset: 2, span: 16}}>
-                    <Button className="subBtn" htmlType="submit" type="primary"
-                            onClick={() => handlePost()}>Regist</Button>
-                </Form.Item>
-                <div className="tip">Minting Fee: 0.005ETH</div>
 
-                <Form.Item wrapperCol={{offset: 2, span: 16}}>
-                    <Button className="subBtn" onClick={() => {
-                        goUserInfo()
-                    }}> checkUserInfo </Button>
+                <div className="mint-tip">Minting Fee: <span>{fee}</span>
+                    <Form.Item
+                        className="choosePayType"
+                        name="paytype"
+                        initialValue="1"
+                        rules={[
+                            {max: 50, message: "Telegram length need < 50"},]}
+                    >
+                        <Select
+                            style={{ width: 100,height:30 }}
+                            defaultValue="ETH"
+                            // onChange={handleSearchChange}
+                            options={[
+                                {
+                                    value: '1',
+                                    label: 'ETH',
+                                },
+                                {
+                                    value: '2',
+                                    label: 'WETH',
+                                },
+
+                            ]}
+                        />
+                    </Form.Item>
+                </div>
+                <Form.Item className="button-box">
+                    {!isLoading&&status==3&&<Button className="subBtn" htmlType="submit" type="primary"
+                                    onClick={() => handlePost()}>Mint</Button>
+                    }
+                    {!isLoading&&status==2&&<Button className="subBtn" >Insufficient ETH(WETH) balance</Button>
+                    }
+                    {!isLoading&&status==0&&<ConnectWallet/>}
+                    {!isLoading&&status==1&&<Button className="subBtn"
+                                        onClick={() => checkMintInfo()}>Mint</Button>}
+
+                    {isLoading&&<Button className="subBtn" >Minting<LoadingOutlined /></Button>
+                    }
                 </Form.Item>
+
             </Form>
         )
     }
     return (
         <DaoHome className='daoHome daoContentBg'>
             <div className=" panel-box">
-                <h2 className="title">
-                    Create Passport
-                </h2>
-                <div className="content-box ">
-                    <div className="left">
-                        <img src={firepassport} alt=""/>
+                <div className="panel-container">
+                    <h2 className="panel-title">
+                        Create Passport
+                    </h2>
+                    <div className="content-box ">
+                        <div className="left">
+                            <div className="img-box">
+                                <img src={firepassport} alt=""/>
+                            </div>
+                            <div className="nft-detail">
+                                <div className="title">
+                                    Details
+                                </div>
+                                <div className="content-item">
+                                    <div className="name">
+                                        Contract Address
+                                    </div>
+                                    <div className="value address">
+                                        <a target="_blank"
+                                           href={"https://goerli.etherscan.io/address/" + addressMap.user.address}>{addressMap.user.address.substr(0, 6) + "..." + addressMap.user.address.substr(addressMap.user.address.length - 3, addressMap.user.address.length)}</a>
+                                    </div>
+                                </div>
+                                <div className="content-item">
+                                    <div className="name">
+                                        Token Standard
+                                    </div>
+                                    <div className="value">
+                                        ERC721
+                                    </div>
+                                </div>
+                                <div className="content-item">
+                                    <div className="name">
+                                        Chain
+                                    </div>
+                                    <div className="value">
+                                        Ethereum
+                                    </div>
+                                </div>
+                                <div className="content-item">
+                                    <div className="name">
+                                        NFT Features
+                                    </div>
+                                    <div className="value">
+                                        Each wallet can only mint one passport,
+                                        and it cannot be transferred, soul binding.
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                        <div className="right">
+                            {Table()}
+                        </div>
                     </div>
-                    <div>
-                        {Table()}
-                    </div>
-                    {/*<input type="file" onChange={(file)=>{*/}
-                    {/*    getFile(file)*/}
-                    {/*}}/>*/}
                 </div>
             </div>
-
         </DaoHome>
     )
 }

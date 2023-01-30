@@ -33,7 +33,7 @@ const UserInfo = (props) => {
                 from: state.account,
             }).catch((e) => {
                 console.log(e)
-                alert("get ipfsjson err")
+               message.error("get ipfs info err")
             })
         } catch (e) {
             console.log(e)

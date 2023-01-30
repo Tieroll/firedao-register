@@ -56,30 +56,30 @@ const SBTList = (props) => {
         });
     };
     const handleDealMethod = async (name, params) => {
-        let contractTemp = await getContractByName("mintFireSeed", state.api,)
+        let contractTemp = await getContractByName("MintFireSeed", state.api,)
         if (!contractTemp) {
-            openNotification("please connect")
+            openNotification("Please connect")
         }
         dealMethod(contractTemp, state.account, name, params)
     }
     const handleViewMethod = async (name, params) => {
         let contractTemp = await getContractByName("mintFireSoul", state.api,)
         if (!contractTemp) {
-            openNotification("please connect")
+            openNotification("Please connect")
         }
         return await viewMethod(contractTemp, state.account, name, params)
     }
     const handleSeedViewMethod = async (name, params) => {
-        let contractTemp = await getContractByName("mintFireSeed", state.api,)
+        let contractTemp = await getContractByName("MintFireSeed", state.api,)
         if (!contractTemp) {
-            openNotification("please connect")
+            openNotification("Please connect")
         }
         return await viewMethod(contractTemp, state.account, name, params)
     }
     const handleUserViewMethod = async (name, params) => {
         let contractTemp = await getContractByName("user", state.api,)
         if (!contractTemp) {
-            openNotification("please connect")
+            openNotification("Please connect")
         }
         return await viewMethod(contractTemp, state.account, name, params)
     }
@@ -97,41 +97,43 @@ const SBTList = (props) => {
     return (
         <SBTList>
             <div className="panel-box">
-                <div className="list-box">
-                    <div className="list-box">
-                        <div className="list-header flex-box">
-                            <div className="col">
-                                Level
-                            </div>
-                            <div className="col">
-                                blockNumber
-                            </div>
-                            <div className="col">
-                                From
-                            </div>
-                            <div className="col">
-                                To
-                            </div>
-                        </div>
-                        {
-                            PIDARR.map(item=>(
-                                <div className="list-item ">
-                                    <div className="col">
-                                        1
-                                    </div>
-                                    <div className="col">
-                                        {item.blockNumber}
-                                    </div>
-                                    <div className="col">
-                                        {item.from}
-                                    </div>
-                                    <div className="col">
-                                        {item.to}
-                                    </div>
+                <div className="panel-container">
+                    <div className="fire-list-box">
+                        <div className="list-box">
+                            <div className="list-header flex-box">
+                                <div className="col">
+                                    Level
                                 </div>
-                            ))
+                                <div className="col">
+                                    blockNumber
+                                </div>
+                                <div className="col">
+                                    From
+                                </div>
+                                <div className="col">
+                                    To
+                                </div>
+                            </div>
+                            {
+                                PIDARR.map(item=>(
+                                    <div className="list-item ">
+                                        <div className="col">
+                                            1
+                                        </div>
+                                        <div className="col">
+                                            {item.blockNumber}
+                                        </div>
+                                        <div className="col">
+                                            {item.from}
+                                        </div>
+                                        <div className="col">
+                                            {item.to}
+                                        </div>
+                                    </div>
+                                ))
 
-                        }
+                            }
+                        </div>
                     </div>
                 </div>
             </div>
