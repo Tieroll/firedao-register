@@ -34,6 +34,13 @@ const formatvoteDateTime = (dateTime,endTime) =>{
 
     return dateFormat(dateTime + endTime)
 }
-
-
+export function numToDecimal2(num){
+    if(num==0){
+        return 0
+    }
+    if(num<0.001){
+        return "< 0.01"
+    }
+    return parseInt(num*100)/100
+}
 export default{ formatResult, dateFormat, formatvoteDateTime }

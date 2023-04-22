@@ -1,63 +1,82 @@
-
 /* eslint-disable */
-import useSWR from "swr"
 import jsonp from "jsonp";
-import $ from  'jquery'
-function upload(){
+import $ from 'jquery'
+import {message} from "antd";
+import develop from "../env"
 
-}
-
-const config = {
-    APIKey: '907ad3abd90dd849cb50',
-    APISecret: '727b0fe39e90cd54d246358711e1b01a1d7af5c466bb8888b761546077328738',
-    JWT: 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJ1c2VySW5mb3JtYXRpb24iOnsiaWQiOiI3YjdkZDYzOC1mZDVkLTQ2NGMtYjY5Yi1kY2ViMTZhODBjOGEiLCJlbWFpbCI6Im1hbmdvYm94bGFic0BnbWFpbC5jb20iLCJlbWFpbF92ZXJpZmllZCI6dHJ1ZSwicGluX3BvbGljeSI6eyJyZWdpb25zIjpbeyJpZCI6IkZSQTEiLCJkZXNpcmVkUmVwbGljYXRpb25Db3VudCI6MX0seyJpZCI6Ik5ZQzEiLCJkZXNpcmVkUmVwbGljYXRpb25Db3VudCI6MX1dLCJ2ZXJzaW9uIjoxfSwibWZhX2VuYWJsZWQiOmZhbHNlLCJzdGF0dXMiOiJBQ1RJVkUifSwiYXV0aGVudGljYXRpb25UeXBlIjoic2NvcGVkS2V5Iiwic2NvcGVkS2V5S2V5IjoiOTA3YWQzYWJkOTBkZDg0OWNiNTAiLCJzY29wZWRLZXlTZWNyZXQiOiI3MjdiMGZlMzllOTBjZDU0ZDI0NjM1ODcxMWUxYjAxYTFkN2FmNWM0NjZiYjg4ODhiNzYxNTQ2MDc3MzI4NzM4IiwiaWF0IjoxNjY2MzIwOTQxfQ.fUXVgaQvansmo3wlpB2QSlmLFdorMKszlg2U5qS5QKE'
-}
+$.ajaxSettings.timeout = '4000';
 
 
+export async function getIpfs(strHash) {
+    try {
+        if (strHash && strHash.length > 20 && typeof strHash == "string") {
+            let result = await $.get(develop.PinataGateWay + `/${strHash}?` + develop.PinataToken, {}).catch(e => {
+                console.log(e)
+                // message.error("get ipfs info err")
+            })
 
-export async function getIpfs(strHash){
-    if(strHash&&strHash.length>5&&typeof strHash == "string"){
-        let result = await $.get(`https://cloudflare-ipfs.com/ipfs/${strHash}#x-ipfs-companion-no-redirect`,{})
-
-        return result
-    }else{
-        return false
+            return result
+        } else {
+            return {}
+        }
+    } catch (e) {
+        console.log(e)
     }
 
 }
 
-export async function uploadFile(file){
-    let data
+export async function uploadFile(file) {
+    console.log(file)
+    let data = new FormData();
     data.append('file', file);
-    data.append('pinataOptions', '{"cidVersion": 1}');
-    data.append('pinataMetadata', `{"name": ${file.name}, "keyvalues": {"company": "Pinata"}}`);
+    const metadata = JSON.stringify({
+        name: file.name,
+    });
+    data.append('pinataMetadata', metadata);
+    const options = JSON.stringify({
+        cidVersion: 0,
+    })
+    data.append('pinataOptions', options);
     var posdData = {
-        method: 'post',
+        type: 'post',
         url: 'https://api.pinata.cloud/pinning/pinFileToIPFS',
         headers: {
-            'Authorization': config.JWT,
+            // "Authorization": config.JWT
+            'Content-Type': `multipart/form-data; boundary=${data._boundary}`,
+            Authorization: process.env.REACT_APP_PinataAPIJWT
         },
-        data : data
+        maxBodyLength: "Infinity",
+        contentType: false,
+        processData: false,
+        data: data
     };
-    let result = await axios(posdData)
+    let result
+    try {
+        result = await $.ajax(posdData)
+    } catch (e) {
+        console.log(e)
+    }
     console.log(result)
     return result
 }
-export async function uploadJson(jsonData){
-    console.log(jsonData)
+
+export async function uploadJson(jsonData) {
+    console.log(process.env.REACT_APP_PinataAPIKey)
     let result = await $.ajax({
-        type:"post",
-        url:'https://api.pinata.cloud/pinning/pinJSONToIPFS',
+        type: "post",
+        url: 'https://api.pinata.cloud/pinning/pinJSONToIPFS',
         headers: {
             // "Authorization": config.JWT
-            "pinata_api_key": config.APIKey,
-            "pinata_secret_api_key": config.APISecret
+            "pinata_api_key": process.env.REACT_APP_PinataAPIKey,
+            "pinata_secret_api_key": process.env.REACT_APP_PinataAPISecret
         },
-        data:jsonData
+
+        data: jsonData
     })
     return result
 }
-export async  function getFromPinata(strHash) {
+
+export async function getFromPinata(strHash) {
     if (strHash && strHash.length > 5 && typeof strHash == "string") {
         let result = await jsonp(`https://gateway.pinata.cloud/ipfs/${strHash}`, {})
         return result

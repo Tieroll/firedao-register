@@ -22,25 +22,36 @@ const connect = async (state, dispatch) => {
     }
 
     dispatch({type: 'CONNECT_INIT'});
-    try{
-        await window.ethereum.enable()
-    }catch (e){
-        openNotification(e)
-    }
+
+    await window.ethereum
+        .request({method: 'eth_requestAccounts'})
     await getWeb3().then(result => {
-        console.log(result.web3)
         dispatch({type: "CONNECT", payload: result.web3})
 
+        window.ethereum.on('accountsChanged', (accounts) => {
+            dispatch({type: "SET_ACCOUNT", payload: accounts[0]})
+            result.web3.eth.getAccounts().then(async res=>{
+                let balance =await result.web3.eth.getBalance(res[0])
+                dispatch({type:"SET_ETHBALANCE",payload:balance/10**18})
+            })
+        });
+        window.ethereum.on('chainChanged', () => {
+            result.web3.eth.getAccounts().then(async res=>{
+                let balance =await result.web3.eth.getBalance(res[0])
+                dispatch({type:"SET_ETHBALANCE",payload:balance/10**18})
+            })
 
-        result.web3.eth.net.getId().then(netWarkId => {
-            console.log(netWarkId)
+        });
+
+        result.web3.eth.net.getId().then(async netWarkId => {
             dispatch({type: "SET_NETWORKID", payload: netWarkId})
         })
-        result.web3.eth.getAccounts().then(res=>{
-            console.log(res)
+        result.web3.eth.getAccounts().then(async res=>{
+            let balance =await result.web3.eth.getBalance(res[0])
+            dispatch({type:"SET_ETHBALANCE",payload:balance/10**18})
         })
+
         result.web3.eth.getCoinbase().then(account => {
-            console.log(account)
             if(account){
                 dispatch({type: "SET_ACCOUNT", payload: account})
                 if(account){
@@ -62,9 +73,9 @@ const ConnectProvider = (props) => {
     const [state, dispatch] = useReducer(reducer, initState);
     const {api,} = state
 
-    if (api == null) {
-        connect(state, dispatch)
-    }
+    // if (api == null) {
+    //     connect(state, dispatch)
+    // }
 
     return <ConnectContext.Provider value={{state, dispatch}}>
         {props.children}
