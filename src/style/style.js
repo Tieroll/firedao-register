@@ -14,6 +14,8 @@ const GlobalStyle = createGlobalStyle`
 
   .App {
     min-height: calc(100vh - 12em);
+    position: relative;
+    z-index: 2;
   }
 
   @media screen and (max-width: 1500px) {
@@ -134,6 +136,7 @@ const GlobalStyle = createGlobalStyle`
     width: 100%;
     
     .panel-container {
+      overflow: auto;
       background: #201414;
       padding: 3em 4em;
       margin: 3em auto;
@@ -141,7 +144,6 @@ const GlobalStyle = createGlobalStyle`
       border-radius: 10px;
       opacity: 0.95;
       .nav-list {
-
         display: flex;
         background: #3F3535;
         border-radius: 10px;
@@ -211,7 +213,7 @@ const GlobalStyle = createGlobalStyle`
 
   .ant-form-item-control-input {
     overflow: hidden;
-    background: rgba(255, 255, 255, 0.15) !important;
+    background: rgba(255, 255, 255, 0.15) ;
     min-height: 36px;
   }
 
@@ -239,6 +241,9 @@ const GlobalStyle = createGlobalStyle`
   
   /* mobile style */
   @media screen and (max-width: 1000px) {
+    .firebg{
+      display: none;
+    }
     .nav-box-box{
       display: none;
     }

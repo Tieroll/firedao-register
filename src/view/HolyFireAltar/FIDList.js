@@ -63,8 +63,7 @@ const FIDList = (props) => {
                 soulAccount
             })
         }
-        console.log(arr)
-        setPIDARR(arr)
+        dispatch({type: "SET_PidArr", payload: arr})
     }
 
 
@@ -97,7 +96,7 @@ const FIDList = (props) => {
                                 </div>
                             </div>
                             {
-                                PIDARR.map(item=>(
+                                state.PidArr.map(item=>(
                                     <div className="list-item ">
                                         <div className="col">
                                             {item.fid}

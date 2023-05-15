@@ -1,7 +1,21 @@
 import React, {useEffect, useRef, useState} from 'react';
 import styled from "styled-components";
 import {useConnect} from "../../api/contracts";
-import {Card, Select, Button,InputNumber, Descriptions, message, Form, List, Input, notification, Switch, Radio} from 'antd';
+import {
+    Card,
+    Select,
+    Button,
+    InputNumber,
+    Descriptions,
+    message,
+    Form,
+    List,
+    Input,
+    notification,
+    Switch,
+    Radio,
+    AutoComplete
+} from 'antd';
 import {getContractByName, getContractByContract} from "../../api/connectContract";
 import {dealPayMethod,dealMethod, viewMethod} from "../../utils/contractUtil"
 import {useNavigate} from "react-router-dom";
@@ -57,12 +71,57 @@ const MintFireSeed = (props) => {
           line-height: 25px;
         }
       }
+
     `
 
     let {state, dispatch} = useConnect();
-    const [contract, setContract] = useState(null)
-    const [fee, setFee] = useState(0.1)
-    const [feeStatus, setStatus] = useState(false)
+    const [fee, setFee] = useState(0.08)
+    const [feeStatus, setStatus] = useState(true)
+    const [inputValue, setInputValue] = useState(1)
+    const [coinOptions, setCoinOptions] = useState([
+        {
+            label: "10",
+            value: '10',
+        },
+        {
+            label: "20",
+            value: '20',
+        },
+        {
+            label: "30",
+            value: '30',
+        },
+        {
+            label: "40",
+            value: '40',
+        },
+        {
+            label: "50",
+            value: '50',
+        },
+        {
+            label: "60",
+            value: '60',
+        },
+        {
+            label: "70",
+            value: '70',
+        },
+        {
+            label: "80",
+            value: '80',
+        },
+        {
+            label: "90",
+            value: '90',
+        },
+        {
+            label: "100",
+            value: '100',
+        },
+    ])
+
+
     const handleDealMethod = async (name, params) => {
         let contractTemp = await getContractByName("MintFireSeed", state.api,)
         if (!contractTemp) {
@@ -83,41 +142,102 @@ const MintFireSeed = (props) => {
         }
         return await viewMethod(contractTemp, state.account, name, params)
     }
-    const onChooseAmount = (e) =>{
-        const value = parseInt(e.target.value)
-        setFee(0.1*value)
+    const onChooseAmount = (value) =>{
+        setInputValue(value)
+        setFee(0.08*value)
         if(value>=10){
-            setFee(0.1 * 1000 * 0.9 * value / 1000)
+            setFee(0.08 * 1000 * 0.9 * value / 1000)
         }
         if(value>=20){
-            setFee(0.1 * 1000 * 0.8 * value / 1000)
+            setFee(0.08 * 1000 * 0.8 * value / 1000)
         }
         if(value>=30){
-            setFee(0.1 * 1000 * 0.7 * value / 1000)
+            setFee(0.08 * 1000 * 0.7 * value / 1000)
         }
         if(value>=40){
-            setFee(0.1 * 1000 * 0.6 * value / 1000)
+            setFee(0.08 * 1000 * 0.6 * value / 1000)
         }
         if(value>=50){
-            setFee(0.1 * 1000 * 0.5 * value / 1000)
+            setFee(0.08 * 1000 * 0.5 * value / 1000)
         }
     }
     const Mint = async (item) => {
         // params _token
-        if(!form.getFieldValue().mintAmount){
-            form.getFieldValue().mintAmount = 1
+
+        if (inputValue < 1 || inputValue > 100) {
+            message.warn("please input right mintAmount")
         }
-        if (form.getFieldValue().mintAmount < 1 || form.getFieldValue().mintAmount > 100) {
-            notification.error("please input right mintAmount")
+        if( parseFloat(fee) > parseFloat(state.ethBalance)){
+            message.warn("balance not enough")
+            return
         }
-        handleDealMethod("mintWithETH", [ form.getFieldValue().mintAmount])
+
+        handleDealMethod("mintWithETH", [ inputValue])
     }
     const FeeStatus = async ()=>{
         let status = await  handleViewMethod("FeeStatus",[])
         setStatus(status)
     }
+
+    const getWhitelist = async ()=>{
+        const length = await  handleViewMethod("wListLength",[])
+        for(let i=0;i<length;i++){
+            const item = await  handleViewMethod("whiteList",[i])
+            if(item.toString().toLowerCase() ==  state.account.toLowerCase()){
+
+                setCoinOptions([
+                    {
+                        label: "10",
+                        value: '10',
+                    },
+                    {
+                        label: "20",
+                        value: '20',
+                    },
+                    {
+                        label: "30",
+                        value: '30',
+                    },
+                    {
+                        label: "40",
+                        value: '40',
+                    },
+                    {
+                        label: "50",
+                        value: '50',
+                    },
+                    {
+                        label: "60",
+                        value: '60',
+                    },
+                    {
+                        label: "70",
+                        value: '70',
+                    },
+                    {
+                        label: "80",
+                        value: '80',
+                    },
+                    {
+                        label: "90",
+                        value: '90',
+                    },
+                    {
+                        label: "100",
+                        value: '100',
+                    },
+                    {
+                        label: "10000",
+                        value: '10000',
+                    }
+                ])
+            }
+        }
+
+    }
     useEffect(() => {
         FeeStatus()
+        getWhitelist()
     }, [state.account]);
     return (
         <MintFireSeed>
@@ -141,7 +261,15 @@ const MintFireSeed = (props) => {
                                     validateTrigger="onBlur"
                                     validateFirst={true}
                                 >
-                                    <InputNumber className="inputNumber" min={1} max={100} defaultValue={1}  onBlur={onChooseAmount}/>
+                                    <AutoComplete
+                                        allowClear
+                                        value={inputValue}
+                                        onChange={(e) => {
+                                            onChooseAmount(e)
+                                        }}
+                                        options={coinOptions}
+                                        placeholder=""
+                                    />
                                 </Form.Item>
 
                                 <Form.Item
@@ -153,7 +281,7 @@ const MintFireSeed = (props) => {
                                 </Form.Item>
                                 <div className="tip">
                                     <p>
-                                        1.Every time you cast a FireSeed, you need todonate 0.1ETH.Ordinary users can cast up to 100pieces
+                                        1.Every time you cast a FireSeed, you need todonate 0.08ETH.Ordinary users can cast up to 100pieces
                                         at a time and the official white list can castup to 1.000 pieces at a time:
                                     </p>
                                     <p>
@@ -167,7 +295,6 @@ const MintFireSeed = (props) => {
                                             size="large"
                                             onClick={() => Mint()}>Mint</Button>
                                 </Form.Item>
-
                             </Form>
                         </div>
                     </div>

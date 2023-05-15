@@ -19,7 +19,10 @@ import {getContractByName, getContractByContract} from "../../api/connectContrac
 import {dealPayMethod, dealMethod, viewMethod} from "../../utils/contractUtil"
 import {useNavigate} from "react-router-dom";
 import FireSoul from "../../imgs/FireSoul@2x.webp"
-
+import MintSoulTip from "./components/MintSoulTip";
+import judgeStatus from "../../utils/judgeStatus";
+import {FireLockDecimal} from "../../utils/constants";
+import addressMap from "../../api/addressMap";
 const MintFireSoul = (props) => {
 
     const MintFireSoul = styled.div`
@@ -28,7 +31,9 @@ const MintFireSoul = (props) => {
       flex-shrink: 0;
       flex-grow: 0;
       display: flex;
-
+      .pid{
+        padding-left: 10px;
+      }
       .content-box {
         display: flex;
         padding: 2em 0;
@@ -106,8 +111,8 @@ const MintFireSoul = (props) => {
 
         .select-list {
           position: absolute;
-          width: 100%;
-          max-height: 300px;
+          width: 350px;
+          max-height: 500px;
           overflow: auto;
           z-index: 1;
         }
@@ -132,12 +137,29 @@ const MintFireSoul = (props) => {
 
     let {state, dispatch} = useConnect();
     const [fee, setFee] = useState(0.1)
+    const [status, setStatus] = useState(false)
+
+
     const [list, setList] = useState([])
     const [isFocusSelect, setFocusSelect] = useState(false)
     const [balance, setBalance] = useState([])
     const [chooseId, setId] = useState(undefined)
+    const [showTip, setShowTip] = useState(false)
+    const [allowance, setAllowance] = useState(false)
+    const [UserToSoul, setUserToSoul] = useState("")
+    const [UserFID, setUserFID] = useState(0)
+
+
+
     const handleViewMethod = async (name, params) => {
         let contractTemp = await getContractByName("MintFireSeed", state.api,)
+        if (!contractTemp) {
+            notification.error("Please connect")
+        }
+        return await viewMethod(contractTemp, state.account, name, params)
+    }
+    const handleSoulViewMethod = async (name, params) => {
+        let contractTemp = await getContractByName("mintFireSoul", state.api,)
         if (!contractTemp) {
             notification.error("Please connect")
         }
@@ -148,20 +170,82 @@ const MintFireSoul = (props) => {
         if (!contractTemp) {
             notification.error("Please connect")
         }
-        dealMethod(contractTemp, state.account, name, params)
-        // dealMethod(contractTemp, state.account, name, params,)
+        if(!status){
+            return dealMethod(contractTemp, state.account, name, params)
+        }else{
+            return dealPayMethod(contractTemp, state.account, name, params,state.api.utils.toWei(fee.toString()))
+        }
     }
+    const handleDealSeedMethod = async (name, params) => {
+        let contractTemp = await getContractByName("MintFireSeed", state.api,)
+        if (!contractTemp) {
+            notification.error("Please connect")
+        }
+        dealMethod(contractTemp, state.account, name, params)
 
+    }
+    const handleSeedViewMethod = async (name, params) => {
+        let contractTemp = await getContractByName("MintFireSeed", state.api,)
+        if (!contractTemp) {
+            message.warn("Please connect", 5)
+        }
+        return await viewMethod(contractTemp, state.account, name, params)
+    }
+    const handleUserViewMethod = async (name, params) => {
+        let contractTemp = await getContractByName("user", state.api,)
+        if (!contractTemp) {
+            message.warn("Please connect", 5)
+        }
+        return await viewMethod(contractTemp, state.account, name, params)
+    }
+    const getUserFIDAndAddr = async ()=>{
+        const UserToSoul = await handleSoulViewMethod("UserToSoul", [state.account])
+        const UserFID = await handleSoulViewMethod("UserFID", [state.account])
+        await setUserToSoul(UserToSoul)
+        await setUserFID(UserFID)
+
+    }
+    const getUserInfo = async () => {
+        if (!state.pid) {
+            const userInfo = await handleUserViewMethod("userInfo", [state.account])
+            dispatch({type: "SET_PID", payload: userInfo.PID})
+        }
+    }
     const goPath = (url) => {
         history(url);
     }
-    const Mint = async () => {
-        handleDealMethod("burnToMint", [chooseId])
+    const handleDealCoinMethod = async (name, address, params) => {
+        let contractTemp = await getContractByContract("erc20", address, state.api,)
+        return dealMethod(contractTemp, state.account, name, params)
     }
-
+    const getFee = async ()=>{
+        const feeOn = await handleSoulViewMethod("feeOn", [])
+        const fee = await handleSoulViewMethod("fee", [])
+        console.log(feeOn,fee)
+        setFee(fee/10**18)
+        setStatus(feeOn)
+    }
+    const approve = async () => {
+        const contractAddr =  addressMap["mintFireSoul"].address
+        handleDealSeedMethod("setApprovalForAll",[contractAddr,true])
+        allowance1155(true)
+    }
+    const Mint = async () => {
+        handleDealMethod("burnToMint", [chooseId]).then(async ()=>{
+            await getUserFIDAndAddr()
+            setShowTip(true)
+        }).catch(err=>{
+            console.log(err)
+        })
+    }
+    const allowance1155 =async ()=>{
+        const contractAddr =  addressMap["mintFireSoul"].address
+        const isApproved = await handleSeedViewMethod("isApprovedForAll", [state.account,contractAddr])
+        setAllowance(isApproved)
+    }
     const ownerNFT = async () => {
         const listLength = await handleViewMethod("getOwnerIdlength", [])
-        console.log(listLength)
+
         let list = []
         if (listLength <= 0) {
             return
@@ -174,13 +258,20 @@ const MintFireSoul = (props) => {
                 value: id,
                 balance: balance
             })
-            console.log(list)
         }
 
         setList(list)
     }
-    useEffect(() => {
+    useEffect(async () => {
+        let judgeRes = await judgeStatus(state)
+        if (!judgeRes) {
+            return
+        }
+        allowance1155()
         ownerNFT()
+        getUserInfo()
+        getFee()
+        getUserFIDAndAddr()
     }, [state.account]);
 
     const focusSelect = () => {
@@ -188,12 +279,12 @@ const MintFireSoul = (props) => {
     }
     const chooseSelect = (item) => {
         setFocusSelect(false)
-        console.log(item)
         setId(item.label)
         setBalance(item.balance)
     }
     return (
         <MintFireSoul>
+            {showTip&&<MintSoulTip closeDialog={()=>{setShowTip(false)}} UserToSoul={UserToSoul} UserFID={UserFID} />}
             <div className="panel-box ">
                 <div className="panel-container">
                     <h2 className="panel-title">
@@ -216,10 +307,12 @@ const MintFireSoul = (props) => {
                                         validateFirst={true}
 
                                     >
-                                        <InputNumber className="inputNumber"/>
+                                       <div className="pid">
+                                           {state.pid}
+                                       </div>
                                     </Form.Item>
                                     <Button type="primary" className="go-btn" onClick={() => {
-                                        goPath('/MintPassPort')
+                                        goPath('/MintPassport')
                                     }}>
                                         Mint Passport
                                     </Button>
@@ -275,7 +368,11 @@ const MintFireSoul = (props) => {
                                     </p>
                                 </div>
                                 <Form.Item className="button-box">
-                                    <Button className="subBtn" htmlType="submit" type="primary"
+                                    {!allowance&&     <Button style={{marginRight:"10px"}} className="subBtn" htmlType="submit" type="primary"
+                                                             size="large"
+                                                             onClick={() => approve()}>approve</Button>}
+
+                                    <Button className="subBtn"  htmlType="submit" type="primary"
                                             size="large"
                                             onClick={() => Mint()}>Mint</Button>
                                 </Form.Item>

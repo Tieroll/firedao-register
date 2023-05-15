@@ -5,7 +5,12 @@ const formatResult =  (result) =>{
     }
     return str;
 }
-
+const dealSubAddr = (addr)=>{
+    if(addr){
+        return addr.substr(0,5) + "..." + addr.substr(addr.length-3,addr.length)
+    }
+    return ""
+}
 const dateFormat = (dateTime) => {
     const t = new Date(dateTime);
     const format = 'Y-m-d h:i:s';
@@ -34,6 +39,13 @@ const formatvoteDateTime = (dateTime,endTime) =>{
 
     return dateFormat(dateTime + endTime)
 }
-
-
-export default{ formatResult, dateFormat, formatvoteDateTime }
+export function numToDecimal2(num){
+    if(num<=0){
+        return 0
+    }
+    if(num<0.001){
+        return "< 0.01"
+    }
+    return parseInt(num*100)/100
+}
+export default{ formatResult, dateFormat, formatvoteDateTime,dealSubAddr }

@@ -7,17 +7,44 @@ import {dealMethod, viewMethod} from "../../utils/contractUtil"
 import listIcon from "../../imgs/list-icon.webp"
 import {SearchOutlined} from "@ant-design/icons";
 import {getIpfs} from "../../utils/ipfsApi";
-import {getPidList} from "../../graph/pidlist";
+import {getPidList, getPidCount,getSearchData} from "../../graph/pidlist";
+import develop from "../../env"
+import {useNavigate} from "react-router-dom";
+import fresh from "../../imgs/fresh_icon.webp";
 
 const PidList = (props) => {
     const [activeNav, setNav] = useState(1)
     const PidList = styled.div`
+
       .panel-container {
+
 
         .header-box {
           display: flex;
           width: 100%;
           align-items: center;
+          justify-content: space-between;
+          position: relative;
+
+          .fresh-icon {
+            position: absolute;
+            left: 260px;
+            top: 40px;
+            width: 26px;
+            height: 26px;
+            cursor: pointer;
+            transition: 0.5s;
+
+            &:hover {
+              transform: rotate(180deg);
+            }
+          }
+
+          .nav-list-box {
+            margin: 2em 0;
+            display: flex;
+            width: 100%;
+          }
 
           .search-container {
             .search-box {
@@ -37,11 +64,6 @@ const PidList = (props) => {
         }
       }
 
-      .nav-list-box {
-        margin: 2em 0;
-        display: flex;
-        width: 100%;
-      }
 
       .fire-list-box {
         .list-item, .list-header {
@@ -121,14 +143,41 @@ const PidList = (props) => {
       .pagination {
         text-align: center;
       }
+
+      /* mobile style */
+      @media screen and (max-width: 1000px) {
+        .panel-container {
+          width: 90vw;
+          padding: 3em 1em;
+
+          .header-box {
+            display: block;
+
+            .fresh-icon {
+              top: 15px;
+            }
+          }
+
+          .fire-list-box {
+            width: 100%;
+            overflow-x: scroll;
+            min-width: 100%;
+
+            .list-item {
+              background: none;
+            }
+          }
+        }
+      }
     `
     let {state, dispatch} = useConnect();
-    const [PIDARR, setPIDARR] = useState([])
     const [MYPIDARR, setMYPIDARR] = useState([])
     const [curPage, setCurPage] = useState(1)
     const [pageCount, setPageCount] = useState(20)
     const [searchData, setSearchData] = useState("")
-    const [isShowSearch, setIsShowSearch] = useState(false)
+    const [total, setTotal] = useState(0)
+    const [searchArr, setSearchArr] = useState(false)
+    const history = useNavigate();
     const openNotification = (message) => {
         notification.error({
             message: message,
@@ -166,8 +215,8 @@ const PidList = (props) => {
         }
         return await viewMethod(contractTemp, state.account, name, params)
     }
-    const Row = (item)=>{
-        return <div className="list-item ">
+    const Row = (item, index) => {
+        return <div className="list-item " key={index}>
             <div className="col id">
                 {item.pid}
             </div>
@@ -179,7 +228,7 @@ const PidList = (props) => {
             </div>
 
             <div className="col address">
-                <a href={"https://goerli.etherscan.io/address/" + item.account} target="_blank">
+                <a href={develop.ethScan + "address/" + item.account} target="_blank">
                     {item.account.substr(0, 6) + "..." + item.account.substr(item.account.length - 3, item.account.length)}
                 </a>
             </div>
@@ -198,9 +247,9 @@ const PidList = (props) => {
             </div>
 
             <div className="col">
-                <a href={"http://forumtest.firedao.co/index.php?action=profile;u=" + (item.PID ? item.PID : "0")}
+                <a href={develop.forum + "/index.php?action=profile;u=" + (item.pid ? item.pid : "0")}
                    target="_blank">
-                    {item.PID}
+                    {item.pid}
                 </a>
             </div>
             <div className="col">
@@ -213,73 +262,70 @@ const PidList = (props) => {
                 0
             </div>
             <div className="col">
-                <Button type="primary">
+                <Button type="primary" onClick={() => {
+                    history("/Passport", {state: item.account})
+                }}>
                     View
                 </Button>
             </div>
         </div>
     }
-    const getData = async () => {
-        let pidListRes = await getPidList()
-        console.log(pidListRes)
-        // const length = await handleUserViewMethod("getUserCount", [])
-        // let arr = []
-        // for (let i = 0; i < length; i++) {
-        //     let user = await handleUserViewMethod("users", [i])
-        //     arr.push({
-        //         ...user
-        //     })
-        // }
-        let arr =pidListRes.data.registers
+    const getData = async (page) => {
+        let count = parseInt((await getPidCount()).data.registers[0].pid)
+        setTotal(count)
+
+        if(!page){
+            page=1
+        }
+        let pidListRes = await getPidList(pageCount, (page-1)*pageCount)
+
+        let arr = pidListRes.data.registers
+        let tempArr = []
+
         arr.sort((a, b) => {
             return b.pid - a.pid
         })
-        setPIDARR(arr)
-        let tempArr = [], myArr = []
-        for (let i = 0; i < arr.length; i++) {
-            let info = await getIpfs(arr[i].information)
-            if (info) {
-                tempArr.push({
-                    ...arr[i],
-                    ...info
-                })
-            } else {
-                tempArr.push({
-                    ...arr[i],
-                })
-            }
-            if (arr[i].account.toLowerCase() == state.account.toLowerCase()) {
-                if (info) {
-                    myArr.push({
-                        ...arr[i],
-                        ...info
-                    })
-                } else {
-                    myArr.push({
-                        ...arr[i],
-                    })
-                }
-            }
+
+        dispatch({type: "SET_PidArr", payload: arr})
+
+
+        for (const item of arr) {
+            const info = getIpfs(item.information);
+            const mergedItem = {...item, ...await info};
+            tempArr.push(mergedItem);
 
         }
-        setPIDARR(tempArr)
-        setMYPIDARR(myArr)
+        dispatch({type: "SET_PidArr", payload: tempArr})
     }
     const handleSearchChange = async (e) => {
-        console.log(e)
-
+        setSearchData(e.target.value);
     }
-    const onChangePage = async (page, count) => {
-        setCurPage(page)
+    const onChangePage = async (page) => {
+        getData(page)
+        await setCurPage(page)
+    }
+    const handleShowSizeChange = async (page, count) => {
         setPageCount(count)
     }
     const handleSearch = async () => {
-        setIsShowSearch(!isShowSearch)
+        let data = await getSearchData(searchData,state.api)
+        setSearchArr(data.data.registers)
     }
     useEffect(() => {
         getData()
-    }, [state.account]);
+    }, []);
+    useEffect(async () => {
 
+        try{
+            let myPid = await getSearchData(state.account,state.api)
+            setMYPIDARR([{
+                ...myPid.data.registers[0],
+                ...getIpfs(myPid.data.registers[0].information)
+            }])
+        }catch (e){
+            console.log(e)
+        }
+    }, [state.account]);
 
     return (
         <PidList>
@@ -303,31 +349,30 @@ const PidList = (props) => {
                                 </div>
                             </div>
                         </div>
-                        <div className="search-container">
-                            <div className="search-box">
-                                <Select
-                                    defaultValue="PID"
-                                    style={{width: 120}}
-                                    onChange={handleSearchChange}
-                                    options={[
-                                        {
-                                            value: '1',
-                                            label: 'PID',
-                                        },
-                                        {
-                                            value: '2',
-                                            label: 'FID',
-                                        },
+                        <img className="fresh-icon" onClick={getData} src={fresh} alt=""/>
 
-                                    ]}
-                                />
-                                <Input allowClear  onBlur={(e) => {
-                                    setSearchData(e.target.value)
-                                }}/>
-                                <Button className="search-btn" onClick={handleSearch} type="primary">
-                                    <SearchOutlined/>
-                                </Button>
-                            </div>
+                        <div className="search-container">
+                             <form className="search-box">
+                                    <Select
+                                        defaultValue="PID"
+                                        style={{width: 120}}
+                                        options={[
+                                            {
+                                                value: '1',
+                                                label: 'PID',
+                                            },
+                                            {
+                                                value: '2',
+                                                label: 'FID',
+                                            },
+
+                                        ]}
+                                    />
+                                    <Input allowClear value={searchData} onChange={handleSearchChange}/>
+                                    <Button className="search-btn"  onClick={handleSearch} type="primary">
+                                        <SearchOutlined/>
+                                    </Button>
+                                </form>
                         </div>
                     </div>
 
@@ -372,26 +417,28 @@ const PidList = (props) => {
                             </div>
                         </div>
                         {
-                            !searchData && activeNav == 1 && PIDARR.map((item, index) => (
-                                index >= pageCount * (curPage - 1) && index < pageCount * curPage &&
-                                Row(item)
+                            !searchData && activeNav == 1 && state.PidArr.map((item, index) => (
+                                Row(item, index)
                             ))
                         }
                         {
                             activeNav == 2 && MYPIDARR.map((item, index) => (
                                 index >= pageCount * (curPage - 1) && index < pageCount * curPage &&
-                                Row(item)
+                                Row(item, index)
                             ))
                         }
                         {
-                            searchData&&PIDARR.map((item, index) => (
-                                item.pid.toString() == searchData.toString() && Row(item)
+                            searchArr.length>0 && searchArr.map((item, index) => (
+                                Row(item, index)
                             ))
                         }
                     </div>
                     <div className="pagination">
-                        <Pagination current={curPage} showSizeChanger onChange={onChangePage} total={PIDARR.length}
-                                    defaultPageSize={20}/>
+                        {
+                            activeNav==1&& <Pagination current={curPage} showSizeChanger onShowSizeChange={handleShowSizeChange}
+                                                       onChange={onChangePage} total={total}
+                                                       defaultPageSize={pageCount}/>
+                        }
                     </div>
                 </div>
             </div>

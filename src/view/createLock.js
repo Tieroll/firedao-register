@@ -90,7 +90,6 @@ const CreatePage = (props) => {
     }
     const createLock = async () => {
         await handleDealMethod("createLock", [])
-
     }
     const approve = async () => {
         const listLength = await handleViewMethod("getOwnerLockLenglength", [])
@@ -175,7 +174,7 @@ const CreatePage = (props) => {
     }
     return (
         <CreatePage>
-            <Card title="Create your contract lock" extra={<a href="#"></a>} style={{width: "100vw"}}>
+            <Card title="Create your contract lock" extra={<a href="#"></a>} >
                 <Form form={form} name="control-hooks">
                     <div className="input-box">
                         <Form.Item
@@ -248,6 +247,7 @@ const CreatePage = (props) => {
                     <Form.Item
                         name="Owner"
                         label="Owner"
+                        className="no-bg"
                         initialValue={1}
                     >
                         <Radio.Group onChange={(e)=>{
@@ -382,7 +382,6 @@ const CreatePage = (props) => {
                                 label="End Time"
                                 validateFirst={true}
                             >
-
                                 {endTime}
                             </Form.Item>
                     </div>)

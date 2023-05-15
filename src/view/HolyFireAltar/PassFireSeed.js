@@ -1,21 +1,49 @@
 import React, {useEffect, useRef, useState} from 'react';
 import styled from "styled-components";
 import {useConnect} from "../../api/contracts";
-import {Card, Button, Descriptions, message, Form, List, Input, notification} from 'antd';
+import {Card, Button, Select, Descriptions, message, Form, List, Input, notification} from 'antd';
 import {SendOutlined, TwitterOutlined, UserOutlined} from "@ant-design/icons";
 import {getContractByName, getContractByContract} from "../../api/connectContract";
 import {dealMethod, viewMethod} from "../../utils/contractUtil"
 import {useNavigate} from "react-router-dom";
 import fireseed from "../../imgs/FireSeed@2x.webp"
 import {getPasslist} from "../../graph/myFireseed";
+
 let logs = []
 
 const LockList = (props) => {
     const [form] = Form.useForm();
-    const [form2] = Form.useForm();
     const LockList = styled.div`
       width: 100%;
-      .more-btn{
+      .form-value{
+        padding: 0 10px;
+      }
+      .panel-box {
+        width: 90%;
+        margin: 0 auto;
+
+        .panel-container {
+          width: 100%;
+        }
+      }
+
+      .send-fireseed {
+        margin-top: 20px;
+
+        .ant-form-item {
+          margin: 0 auto;
+          width: 60% !important;
+        }
+
+        .send-button {
+          width: 200px;
+          margin-top: 20px;
+          margin-left: calc(50% - 100px);
+        }
+
+      }
+
+      .more-btn {
         width: 300px;
         height: 40px;
         background: #3F3535;
@@ -117,37 +145,73 @@ const LockList = (props) => {
       }
 
       .content2 {
-        width: 60%;
         margin: 2em auto;
+
+        .myrecommend {
+          display: flex;
+          align-items: center;
+
+          .name {
+            font-size: 16px;
+            font-family: Helvetica-Bold, Helvetica;
+            font-weight: bold;
+            color: #FFFFFF;
+            line-height: 19px;
+            margin-right: 10px;
+          }
+
+          .value {
+            line-height: 40px;
+            padding: 0 20px;
+            width: 600px;
+            height: 40px;
+            background: #3F3535;
+            border-radius: 10px;
+            border: 1px solid #342727;
+          }
+        }
 
         .box-title {
           margin-top: 2em;
-          color: #999;
+          font-size: 16px;
+          font-family: Helvetica-Bold, Helvetica;
           font-weight: bold;
         }
 
-        .flex-box {
-          margin-top: 1em;
-          justify-content: space-between;
+        .refer-list {
+          display: flex;
 
-          .value {
-            flex: 1;
+          .refer-item {
+            margin-right: 10px;
+            text-align: center;
+            margin-top: 1em;
+            justify-content: space-between;
+            width: 325px;
+            height: 120px;
+            background: #3F3535;
+            border-radius: 10px;
+            border: 1px solid #7F6868;
+            padding: 20px;
+
+            .value {
+              font-size: 40px;
+              font-family: Krungthep;
+              line-height: 50px;
+              color: #fff;
+            }
+
+            .name {
+              line-height: 40px;
+              margin-top: 10px;
+              font-family: Helvetica-Bold, Helvetica;
+              font-weight: bold;
+              color: #FFFFFF;
+              line-height: 22px;
+            }
           }
 
-          .name {
-            width: 10em;
-            line-height: 40px;
-          }
         }
 
-        .value {
-          height: 40px;
-          background: #3F3535;
-          border-radius: 10px;
-          border: 1px solid #342727;
-          line-height: 40px;
-          padding: 0 20px;
-        }
 
       }
 
@@ -249,9 +313,8 @@ const LockList = (props) => {
 
             }
         }
-        console.log(recommenderLength, recommenderInfoArr, address)
         dispatch({type: "SET_MyRecommender", payload: address})
-        setLevel1(recommenderInfoArr)
+        setLevel1(recommenderInfoArr.length)
         setLevel2(level2TotalLength)
         setLevel3(level3TotalLength)
         setTotal(total)
@@ -269,6 +332,8 @@ const LockList = (props) => {
             list.push({
                 id,
                 balance,
+                value:id,
+                label:id
             })
         }
 
@@ -283,10 +348,10 @@ const LockList = (props) => {
     const check = async () => {
         let address = form.getFieldValue().toAddress
         const hide = message.loading('Checking', 0);
-        console.log(address,logs)
+        console.log(address, logs)
         setHasTransfer(false)
-        for(let i=0;i<logs.length;i++){
-            if(address.toString().toLowerCase() == logs[i].to.toLowerCase()){
+        for (let i = 0; i < logs.length; i++) {
+            if (address.toString().toLowerCase() == logs[i].to.toLowerCase()) {
                 setHasTransfer(true)
             }
         }
@@ -298,7 +363,7 @@ const LockList = (props) => {
         for (let i = 0; i < logs.length; i++) {
             try {
                 // console.log(address1, address2, address3)
-                if (logs[i].from.toString().toLowerCase() ==  address.toLowerCase()) {
+                if (logs[i].from.toString().toLowerCase() == address.toLowerCase()) {
                     arr.push({
                         transferTime: logs[i].transferTime,
                         from: address,
@@ -317,7 +382,7 @@ const LockList = (props) => {
         for (let i = 0; i < logs.length; i++) {
             try {
                 // console.log(address1, address2, address3)
-                if (logs[i].from.toString().toLowerCase() ==  address.toLowerCase()) {
+                if (logs[i].from.toString().toLowerCase() == address.toLowerCase()) {
                     arr.push({
                         transferTime: logs[i].transferTime,
                         from: address,
@@ -338,14 +403,13 @@ const LockList = (props) => {
         // })
         //state.api.eth.abi.decodeParameter
 
-
         console.log(logs)
         let arr = []
         for (let i = 0; i < logs.length; i++) {
             try {
                 // console.log(address1, address2, address3)
-                console.log(logs[i].from.toString().toLowerCase(),logs[i].to)
-                if (logs[i].from.toString().toLowerCase()   == state.account.toLowerCase()) {
+                console.log(logs[i].from.toString().toLowerCase(), logs[i].to)
+                if (logs[i].from.toString().toLowerCase() == state.account.toLowerCase()) {
                     arr.push({
                         transferTime: logs[i].transferTime,
                         from: logs[i].from,
@@ -358,7 +422,9 @@ const LockList = (props) => {
         }
         setLogArr(arr)
     }
-
+    const handleChooseId = (id) => {
+        setID(id)
+    }
     useEffect(async () => {
         getMyFireSeed()
         myClass()
@@ -368,236 +434,246 @@ const LockList = (props) => {
     }, [state.account]);
     return (
         <LockList>
-            <div>
-                <div className="panel-box">
-                    <div className="panel-container">
-                        <div className="panel-title">
-                            My FireSeed
-                        </div>
-
-                        <div className="content1">
-
-                            <div className="list">
-                                {
-                                    state.fireSeedList.map(item => (
-                                        <div className="list-item" onClick={() => {
-                                            setID(item.id)
-                                        }}>
-                                            <img className="img" src={fireseed} alt=""/>
-                                            <div className="item-info">
-                                                <div className="id">
-                                                    FireSeed # {item.id}
-                                                </div>
-                                                <div className="number-box">
-                                                    <div className="number">
-                                                        ×{item.balance}
-                                                    </div>
-                                                </div>
-
-                                            </div>
-                                        </div>
-                                    ))
-                                }
-                            </div>
-                            <div className="more-btn">
-                                MORE
-                            </div>
-                        </div>
+            <div className="panel-box">
+                <div className="panel-container">
+                    <div className="panel-title">
+                        My FireSeed
                     </div>
-                </div>
 
+                    <div className="content1">
 
-                <div className="panel-box">
-                    <div className="panel-container">
-                        <div className="panel-title">
-                            Pass FireSeed
-                        </div>
-                        <Descriptions.Item label="transfer">
-                            <Form form={form}>
-                                <Form.Item
-                                    name="FireSeed ID:"
-                                    label="FireSeed ID:"
-
-                                >
-                                    {curId}
-                                </Form.Item>
-                                <Form.Item
-                                    name="toAddress"
-                                    label="Transfer Address"
-                                    validateTrigger="onBlur"
-                                    validateFirst={true}
-                                    rules={[
-                                        {required: true, message: 'Please input Title!'},
-                                    ]}
-                                >
-                                    <div className="flex-box">
-                                        <Input/>
-                                        <Button type="primary" onClick={() => {
-                                            check()
-                                        }}>
-                                            Check
-                                        </Button>
-                                    </div>
-                                </Form.Item>
-                                <Form.Item
-                                    label="hasTransfer"
-                                    validateTrigger="onBlur"
-                                >
-                                    <div className="flex-box">
-                                        {hasTransfer?"Yes":"No"}
-                                    </div>
-                                </Form.Item>
-                                <Form.Item
-                                    name="amount"
-                                    label="Transfer Amount"
-                                    validateTrigger="onBlur"
-                                    validateFirst={true}
-                                    rules={[
-                                        {required: true, message: 'Please input Title!'},
-                                    ]}
-
-                                >
-                                    <div className="flex-box">
-                                        <Input/>
-
-                                    </div>
-                                </Form.Item>
-                                <Form.Item>
-                                    <Button type="primary" htmlType="submit" onClick={() => {
-                                        transfer()
+                        <div className="list">
+                            {
+                                state.fireSeedList.map(item => (
+                                    <div className="list-item" onClick={() => {
+                                        setID(item.id)
                                     }}>
-                                        Send
-                                    </Button>
-                                </Form.Item>
-                            </Form>
-                        </Descriptions.Item>
+                                        <img className="img" src={fireseed} alt=""/>
+                                        <div className="item-info">
+                                            <div className="id">
+                                                FireSeed # {item.id}
+                                            </div>
+                                            <div className="number-box">
+                                                <div className="number">
+                                                    ×{item.balance}
+                                                </div>
+                                            </div>
+
+                                        </div>
+                                    </div>
+                                ))
+                            }
+                        </div>
+                        <div className="more-btn">
+                            MORE
+                        </div>
                     </div>
                 </div>
-                <div className="panel-box content2-part2">
-                    <div className="panel-container">
-                        <div className="panel-title">
-                            My PassList
-                        </div>
-                        <div className="content2">
-                            <div className="box-title">
+            </div>
+
+
+            <div className="panel-box">
+                <div className="panel-container">
+                    <div className="panel-title">
+                        Pass FireSeed
+                    </div>
+                    <Descriptions.Item label="transfer">
+                        <Form form={form} className="send-fireseed">
+                            <Form.Item
+                                name="FireSeed ID:"
+                                label="FireSeed ID:"
+
+                            >
+                                <Select
+                                    className="select-chain"
+                                    defaultValue={curId}
+                                    onChange={handleChooseId}
+                                    value={curId}
+                                    options={state.fireSeedList}
+                                />
+                            </Form.Item>
+                            <Form.Item
+                                name="toAddress"
+                                label="Transfer Address"
+                                validateTrigger="onBlur"
+                                validateFirst={true}
+                                rules={[
+                                    {required: true, message: 'Please input Title!'},
+                                ]}
+                            >
+                                <div className="flex-box">
+                                    <Input/>
+                                    <Button type="primary" onClick={() => {
+                                        check()
+                                    }}>
+                                        Check
+                                    </Button>
+                                </div>
+                            </Form.Item>
+                            <Form.Item
+                                label="hasTransfer"
+                                validateTrigger="onBlur"
+                            >
+                                <div className="flex-box form-value">
+                                    {hasTransfer ? "Yes" : "No"}
+                                </div>
+                            </Form.Item>
+                            <Form.Item
+                                name="amount"
+                                label="Transfer Amount"
+                                validateTrigger="onBlur"
+                                validateFirst={true}
+                                rules={[
+                                    {required: true, message: 'Please input Title!'},
+                                ]}
+
+                            >
+                                <div className="flex-box">
+                                    <Input/>
+                                </div>
+                            </Form.Item>
+                            <Button className="send-button" type="primary" htmlType="submit" onClick={() => {
+                                transfer()
+                            }}>
+                                Send
+                            </Button>
+                        </Form>
+                    </Descriptions.Item>
+                </div>
+            </div>
+            <div className="panel-box content2-part2">
+                <div className="panel-container">
+                    <div className="panel-title">
+                        My PassList
+                    </div>
+                    <div className="content2">
+                        <div className="myrecommend">
+                            <div className="name">
                                 My Recommender:
                             </div>
                             <div className="value">
                                 {state.myRecommender}
                             </div>
-                            <div className="box-title">
-                                My Team Size:
-                            </div>
-                            <div className="flex-box">
-                                <div className="name">
-                                    Level 1:
-                                </div>
+                        </div>
+
+                        <div className="box-title">
+                            My Team Size:
+                        </div>
+                        <div className="refer-list">
+                            <div className="refer-item">
                                 <div className="value">
-                                    {level1.length}
+                                    {level1}
                                 </div>
-                            </div>
-                            <div className="flex-box">
                                 <div className="name">
-                                    Level 2:
+                                    Level 1
                                 </div>
+
+                            </div>
+                            <div className="refer-item">
                                 <div className="value">
                                     {level2}
                                 </div>
-                            </div>
-                            <div className="flex-box">
                                 <div className="name">
-                                    Level 3:
+                                    Level 2:
                                 </div>
+
+                            </div>
+                            <div className="refer-item">
                                 <div className="value">
                                     {level3}
                                 </div>
-                            </div>
-                            <div className="flex-box">
                                 <div className="name">
-                                    Total:
+                                    Level 3:
                                 </div>
+
+                            </div>
+                            <div className="refer-item">
                                 <div className="value">
                                     {total}
                                 </div>
+                                <div className="name">
+                                    Total:
+                                </div>
+
                             </div>
-                        </div>
-                        <div className="list-box">
-                            <div className="list-header flex-box">
-                                <div className="col">
-                                    Level
-                                </div>
-                                <div className="col">
-                                    transferTime
-                                </div>
-                                <div className="col">
-                                    From
-                                </div>
-                                <div className="col">
-                                    To
-                                </div>
-                            </div>
-                            {
-                                logArr.map(item => (
-                                    <div className="list-item ">
-                                        <div className="col">
-                                            1
-                                        </div>
-                                        <div className="col">
-                                            {item.transferTime}
-                                        </div>
-                                        <div className="col">
-                                            {item.from}
-                                        </div>
-                                        <div className="col">
-                                            {item.to}
-                                        </div>
-                                    </div>
-                                ))
-
-                            }
-                            {
-                                level2Arr.map(item => (
-                                    <div className="list-item ">
-                                        <div className="col">
-                                            2
-                                        </div>
-                                        <div className="col">
-                                            {item.transferTime}
-                                        </div>
-                                        <div className="col">
-                                            {item.from}
-                                        </div>
-                                        <div className="col">
-                                            {item.to}
-                                        </div>
-                                    </div>
-                                ))
-
-                            }
-                            {
-                                level3Arr.map(item => (
-                                    <div className="list-item ">
-                                        <div className="col">
-                                            3
-                                        </div>
-                                        <div className="col">
-                                            {item.transferTime}
-                                        </div>
-                                        <div className="col">
-                                            {item.from}
-                                        </div>
-                                        <div className="col">
-                                            {item.to}
-                                        </div>
-                                    </div>
-                                ))
-
-                            }
                         </div>
                     </div>
-                </div>
+                    <div className="list-box">
+                        <div className="list-header flex-box">
+                            <div className="col">
+                                Level
+                            </div>
+                            <div className="col">
+                                transferTime
+                            </div>
+                            <div className="col">
+                                From
+                            </div>
+                            <div className="col">
+                                To
+                            </div>
+                        </div>
+                        {
+                            logArr.map(item => (
+                                <div className="list-item ">
+                                    <div className="col">
+                                        1
+                                    </div>
+                                    <div className="col">
+                                        {item.transferTime}
+                                    </div>
+                                    <div className="col">
+                                        {item.from}
+                                    </div>
+                                    <div className="col">
+                                        {item.to}
+                                    </div>
+                                </div>
+                            ))
 
+                        }
+                        {
+                            level2Arr.map(item => (
+                                <div className="list-item ">
+                                    <div className="col">
+                                        2
+                                    </div>
+                                    <div className="col">
+                                        {item.transferTime}
+                                    </div>
+                                    <div className="col">
+                                        {item.from}
+                                    </div>
+                                    <div className="col">
+                                        {item.to}
+                                    </div>
+                                </div>
+                            ))
+
+                        }
+                        {
+                            level3Arr.map(item => (
+                                <div className="list-item ">
+                                    <div className="col">
+                                        3
+                                    </div>
+                                    <div className="col">
+                                        {item.transferTime}
+                                    </div>
+                                    <div className="col">
+                                        {item.from}
+                                    </div>
+                                    <div className="col">
+                                        {item.to}
+                                    </div>
+                                </div>
+                            ))
+
+                        }
+                    </div>
+                </div>
             </div>
+
 
         </LockList>
     )

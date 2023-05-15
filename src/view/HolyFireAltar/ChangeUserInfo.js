@@ -54,7 +54,12 @@ const ChangeUserInfo = (props) => {
           margin: 0 auto;
         }
       }
-    
+      /* mobile style */
+      @media screen and (max-width: 1000px) {
+        .content-box   {
+          min-width: 100%;
+        }
+      }
     `
 
     let {state, dispatch} = useConnect();
@@ -147,34 +152,41 @@ const ChangeUserInfo = (props) => {
                         }
                     ]}
                 >
-                    <Input/>
+                    <Input allowClear/>
                 </Form.Item>
                 <Form.Item
                     name="BIO"
                     label="BIO"
+                    initialValue={"Let's build the Bit Civilization together!"}
                     rules={[
                         {max: 200, message: "BIO length need < 200"},]}
                 >
-                    <TextArea  allowClear/>
+                    <TextArea defaultValue={"Let's build the Bit Civilization together!"}  allowClear/>
                 </Form.Item>
                 <Form.Item
                     name="Twitter"
                     label="Twitter"
+                    initialValue={"FireDAOlab"}
                     rules={[
                         {max: 50, message: "Twitter length need < 50"},]}
                 >
                     <Input
                         prefix={<TwitterOutlined/>}
+                        defaultValue={"FireDAOlab"}
+                        allowClear
                     />
                 </Form.Item>
                 <Form.Item
                     name="telegram"
                     label="Telegram"
+                    initialValue={"FireDAOEN"}
                     rules={[
                         {max: 50, message: "Telegram length need < 50"},]}
                 >
                     <Input
                         prefix={<SendOutlined/>}
+                        defaultValue={"FireDAOEN"}
+                        allowClear
                     />
                 </Form.Item>
                 <Form.Item
@@ -184,7 +196,7 @@ const ChangeUserInfo = (props) => {
                     rules={[
                         {max: 50, message: "Website length need < 50"},]}
                 >
-                    <Input defaultValue={"www.FireDAO.co"}
+                    <Input defaultValue={"www.FireDAO.co"} allowClear
                     />
                 </Form.Item>
                 <Form.Item className="button-box">

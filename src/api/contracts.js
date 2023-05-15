@@ -22,18 +22,9 @@ const connect = async (state, dispatch) => {
     }
 
     dispatch({type: 'CONNECT_INIT'});
-    try{
-        await window.ethereum.enable()
-    }catch (e){
-        openNotification(e)
-    }
-    window.ethereum.on('chainChanged', (netWarkId) => {
-        if(netWarkId){
-            netWarkId = netWarkId.substr(netWarkId.indexOf("x",netWarkId.length))
-        }
-        dispatch({type: "SET_NETWORKID", payload: netWarkId})
 
-    });
+    await window.ethereum
+        .request({method: 'eth_requestAccounts'})
     await getWeb3().then(result => {
         dispatch({type: "CONNECT", payload: result.web3})
 
@@ -53,13 +44,6 @@ const connect = async (state, dispatch) => {
         });
 
         result.web3.eth.net.getId().then(async netWarkId => {
-            console.log(netWarkId)
-            if(netWarkId!=5){
-                await window.ethereum.request({
-                    method: 'wallet_switchEthereumChain',
-                    params: [{chainId: '0x5'}],
-                });
-            }
             dispatch({type: "SET_NETWORKID", payload: netWarkId})
         })
         result.web3.eth.getAccounts().then(async res=>{
@@ -68,7 +52,6 @@ const connect = async (state, dispatch) => {
         })
 
         result.web3.eth.getCoinbase().then(account => {
-            console.log(account)
             if(account){
                 dispatch({type: "SET_ACCOUNT", payload: account})
                 if(account){

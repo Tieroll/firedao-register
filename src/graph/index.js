@@ -2,7 +2,7 @@
 
 import $ from 'jquery'
 import {message} from "antd";
-
+import develop from "../env"
 function upload() {
 
 }
@@ -11,18 +11,32 @@ const headers = {
     'Content-type': 'application/json',
 }
 
-
-const fetchQuery = (params, variables) => {
+const fetchQueryBase = (path,params, variables) => {
     //juicebox
     //https://gateway.thegraph.com/api/5da5a88f070ac0b7892dc2aad44df198/deployments/id/QmcKc84SeJy1BJVH74YGJpfnjgbZtdG6MuifH9BfSf9fKP
 
     // https://gateway.testnet.thegraph.com/api/[api-key]/subgraphs/id/FFVH8p93DLnnYogLy4nhwTUSo7C976ZaGi1JUhvGVotQ
-    const subgraphUrl ="https://gateway.testnet.thegraph.com/api/984432ec09aa0b4dbc3c7af43097dc7c/subgraphs/id/931maj6bpeGYPsYRMFdJSxrk3zoHWTSYeTX7xE2gsDCD"
-
+    const subgraphUrl = develop.graphUrlBase
     const body = JSON.stringify({
         query: params.text, // GraphQL text from input
     })
-    const response = fetch(subgraphUrl, {
+    const response = fetch(subgraphUrl+path, {
+        method: 'POST',
+        headers,
+        body,
+    }).then((res) => res.json())
+    return response
+}
+const fetchQuery = (path,params, variables) => {
+    //juicebox
+    //https://gateway.thegraph.com/api/5da5a88f070ac0b7892dc2aad44df198/deployments/id/QmcKc84SeJy1BJVH74YGJpfnjgbZtdG6MuifH9BfSf9fKP
+
+    // https://gateway.testnet.thegraph.com/api/[api-key]/subgraphs/id/FFVH8p93DLnnYogLy4nhwTUSo7C976ZaGi1JUhvGVotQ
+    const subgraphUrl = develop.graphUrl
+    const body = JSON.stringify({
+        query: params.text, // GraphQL text from input
+    })
+    const response = fetch(subgraphUrl+path, {
         method: 'POST',
         headers,
         body,
@@ -38,6 +52,7 @@ export async function getGraph(strHash) {
     return result
 }
 export {
-    fetchQuery
+    fetchQuery,
+    fetchQueryBase
 }
 

@@ -7,6 +7,7 @@ import {uploadJson, uploadFile} from "../../utils/ipfsApi"
 import firepassport from "../../imgs/passport@2x.webp"
 import {useNavigate} from 'react-router-dom'
 import addressMap from "../../api/addressMap";
+import develop from "../../env"
 import {
     TwitterOutlined,
     SendOutlined,
@@ -14,7 +15,7 @@ import {
     LoadingOutlined
 } from '@ant-design/icons';
 import {dealMethod, viewMethod,dealPayMethod} from "../../utils/contractUtil";
-import ConnectWallet from "../../component/ConnectWallet";
+import ConnectWallet from "../../component/ConnectWallet/ConnectWallet";
 const Register = (props) => {
     const [form] = Form.useForm();
     const DaoHome = styled.div`
@@ -119,7 +120,25 @@ const Register = (props) => {
           }
         }
       }
-
+      /* mobile style */
+      @media screen and (max-width: 1000px) {
+        .panel-container{
+          width: 94%;
+          padding: 2em 2.5em;
+        }
+        .content-box {
+          display: block;
+          .left,.right{
+            width: 100%;
+            .mint-tip{
+              justify-content: space-between;
+            }
+            .ant-btn{
+              width: 100%;
+            }
+          }
+        }
+      }
     `
     const [messageApi] = message.useMessage();
     let {state, dispatch} = useConnect();
@@ -173,6 +192,7 @@ const Register = (props) => {
     const feeOn = async () => {
         return await handleViewMethod("feeOn",[])
     }
+
     const getFee = async () => {
         return await  handleViewMethod("fee",[])
     }
@@ -235,7 +255,7 @@ const Register = (props) => {
               setIsLoading(false)
               return
           }
-          if(!/^[a-zA-Z0-9_-]+@[a-zA-Z0-9_-]+(\.[a-zA-Z0-9_-]+)+$/.test(Email)){
+          if(!/^[a-zA-Z0-9._%+-]+@[a-zA-Z0-9_-]+(\.[a-zA-Z0-9_-]+)+$/.test(Email)){
               openMessageError("Please input right Email")
               setIsLoading(false)
               return
@@ -296,8 +316,8 @@ const Register = (props) => {
     //check can submit
     useEffect(() => {
         if(state.account&&state.apiState == "READY"){
-            if( state.networkId == 5){
-                if(state.ethBalance > 0.009){
+            if( state.networkId == develop.chainId){
+                if(state.ethBalance > 0.008)    {
                     setStatus(3)
                 }else{
                     setStatus(2)
@@ -310,8 +330,8 @@ const Register = (props) => {
         }
     }, [state.account,state.networkId,state.apiState,state.ethBalance]);
     const checkMintInfo = async ()=>{
-        if(state.networkId !== 5){
-            openMessageError("The testnet is not available now, please connect to Goerli Testnet.")
+        if(state.networkId !== develop.chainId){
+            openMessageError("The testnet is not available now, please connect to" + develop.Name)
             return
         }
         if(state.apiState !== "READY"){
@@ -347,6 +367,7 @@ const Register = (props) => {
                 >
                     <Input
                         prefix={<UserOutlined/>}
+                        allowClear
                     />
                 </Form.Item>
                 <Form.Item
@@ -363,12 +384,12 @@ const Register = (props) => {
                         {max: 50, message: "Email length need < 50"},
 
                         {
-                            pattern: /^[a-zA-Z0-9_-]+@[a-zA-Z0-9_-]+(\.[a-zA-Z0-9_-]+)+$/,
+                            pattern: /^[a-zA-Z0-9._%+-]+@[a-zA-Z0-9_-]+(\.[a-zA-Z0-9_-]+)+$/,
                             message: "Email error"
                         }
                     ]}
                 >
-                    <Input/>
+                    <Input allowClear/>
                 </Form.Item>
                 <Form.Item
                     name="BIO"
@@ -382,21 +403,27 @@ const Register = (props) => {
                 <Form.Item
                     name="Twitter"
                     label="Twitter"
+                    initialValue={"FireDAOlab"}
                     rules={[
                         {max: 50, message: "Twitter length need < 50"},]}
                 >
                     <Input
                         prefix={<TwitterOutlined/>}
+                        defaultValue={"FireDAOlab"}
+                        allowClear
                     />
                 </Form.Item>
                 <Form.Item
                     name="telegram"
                     label="Telegram"
+                    initialValue={"FireDAOEN"}
                     rules={[
                         {max: 50, message: "Telegram length need < 50"},]}
                 >
                     <Input
                         prefix={<SendOutlined/>}
+                        defaultValue={"FireDAOEN"}
+                        allowClear
                     />
                 </Form.Item>
                 <Form.Item
@@ -406,10 +433,11 @@ const Register = (props) => {
                     rules={[
                         {max: 50, message: "Website length need < 50"},]}
                 >
-                    <Input defaultValue={"www.FireDAO.co"}/>
+                    <Input defaultValue={"www.FireDAO.co"} allowClear/>
                 </Form.Item>
 
-                <div className="mint-tip">Minting Fee: <span>{fee}</span>
+                <div className="mint-tip">
+                    <div>Minting Fee: <span>{fee}</span></div>
                     <Form.Item
                         className="choosePayType"
                         name="paytype"
@@ -474,7 +502,7 @@ const Register = (props) => {
                                     </div>
                                     <div className="value address">
                                         <a target="_blank"
-                                           href={"https://goerli.etherscan.io/address/" + addressMap.user.address}>{addressMap.user.address.substr(0, 6) + "..." + addressMap.user.address.substr(addressMap.user.address.length - 3, addressMap.user.address.length)}</a>
+                                           href={ develop.ethScan+"address/" + addressMap.user.address}>{addressMap.user.address.substr(0, 6) + "..." + addressMap.user.address.substr(addressMap.user.address.length - 3, addressMap.user.address.length)}</a>
                                     </div>
                                 </div>
                                 <div className="content-item">
@@ -490,7 +518,7 @@ const Register = (props) => {
                                         Chain
                                     </div>
                                     <div className="value">
-                                        Ethereum
+                                        {develop.Name}
                                     </div>
                                 </div>
                                 <div className="content-item">

@@ -1,6 +1,6 @@
 import React, {} from 'react';
 import styled from "styled-components";
-import onBuildingImg from  "../imgs/fire_building.png"
+import onBuildingImg from  "../imgs/fire_building.webp"
 const OnBuilding = () => {
     const OnBuilding = styled.div`
 
@@ -15,8 +15,8 @@ const OnBuilding = () => {
       }
       img{
         margin-top: 15%;
-        ming-width: 350px;
-        width: 26vw;
+        min-width: 300px;
+        width: 23vw;
       }
       .title{
         margin-top: 2em;
@@ -25,6 +25,11 @@ const OnBuilding = () => {
         font-weight: bold;
         color: #FFFFFF;
         line-height: 3vw;
+      }
+      @media screen and (max-width: 1000px) {
+        img{
+          min-width: 200px;
+        }
       }
     `
 
